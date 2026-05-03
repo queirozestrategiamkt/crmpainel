@@ -1127,8 +1127,41 @@ select.input { cursor: pointer; }
 
   
 
-  /* ═══════════════════════════════════════════ INIT — Carrega todos os dados ao fazer login ═══════════════════════════════════════════ */ async function initCRM() { toast('Carregando dados...', 'info'); await Promise.all([ fetchLeadsDB(), fetchClientesDB(), fetchCampanhasDB(), fetchDraftsDB(), ]); rendered['dashboard'] = true; renderDashboard(); toast('Dados carregados!', 'success'); } /* ═══════════════════════════════════════════ LEADS — READ, CREATE, UPDATE, DELETE ═══════════════════════════════════════════ */ // READ — buscar leads ativos (sem deleted) async function fetchLeadsDB() { const { data, error } = await db .from('leads') .select('*') .is('deleted_at', null) // só ativos .order('created_at', { ascending: false }); if (!error) DATA.leads = data ?? []; } // CREATE — salvar novo lead async function saveLeadDB(lead) { const { data, error } = await db .from('leads') .insert([{ nome: lead.nome, escritorio: lead.escritorio, area: lead.area, canal: lead.canal, score: lead.score, etapa: 'NOVO', proximo: 'Primeiro contato', }]) .select() .single(); if (error) { toast('Erro ao salvar lead: ' + error.message, 'error'); return null; } return data; } // UPDATE — mover etapa do lead async function updateLeadEtapaDB(id, novaEtapa) { const { error } = await db .from('leads') .update({ etapa: novaEtapa }) .eq('id', id); if (error) toast('Erro ao mover lead', 'error'); } // SOFT DELETE — mover para lixeira (não apaga do banco) async function deleteLeadDB(id) { const lead = DATA.leads.find(l => l.id === id); if (!lead) return; // 1. Marcar como deletado na tabela leads await db.from('leads').update({ deleted_at: new Date().toISOString() }).eq('id', id); // 2. Salvar na tabela drafts await db.from('drafts').insert([{ tipo: 'lead', label: lead.nome + ' — ' + lead.escritorio, dados: lead, origem_id: lead.id, expira_em: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(), }]); DATA.leads = DATA.leads.filter(l => l.id !== id); updateDraftBadge(); } /* ═══════════════════════════════════════════ CLIENTES — READ, CREATE, DELETE ═══════════════════════════════════════════ */ async function fetchClientesDB() { const { data, error } = await db .from('clientes') .select('*, campanhas(*), recebimentos(*)') // busca relacionados .is('deleted_at', null) .order('created_at', { ascending: false }); if (!error) DATA.clientes = data ?? []; } async function saveClienteDB(cliente) { const { data, error } = await db .from('clientes') .insert([cliente]) .select().single(); if (error) { toast('Erro ao salvar cliente', 'error'); return null; } return data; } /* ═══════════════════════════════════════════ CAMPANHAS — READ ═══════════════════════════════════════════ */ async function fetchCampanhasDB() { const { data, error } = await db .from('campanhas') .select('*, clientes(nome)') // join com clientes .order('created_at', { ascending: false }); if (!error) DATA.campanhas = data ?? []; } /* ═══════════════════════════════════════════ DRAFTS — READ e RESTORE ═══════════════════════════════════════════ */ async function fetchDraftsDB() { const { data, error } = await db .from('drafts') .select('*') .gt('expira_em', new Date().toISOString()) // só não expirados .order('deleted_at', { ascending: false }); if (!error) { drafts = data ?? []; updateDraftBadge(); } } async function restoreDraftDB(draftId, tipo, origemId) { // Restaurar: remover deleted_at da tabela original await db.from(tipo + 's').update({ deleted_at: null }).eq('id', origemId); // Remover do drafts await db.from('drafts').delete().eq('id', draftId); await Promise.all([fetchLeadsDB(), fetchClientesDB(), fetchDraftsDB()]); rendered[tipo + 's'] = false; toast('Item restaurado com sucesso!', 'success'); }
+  /* ═══════════════════════════════════════════ INIT — Carrega todos os dados ao fazer login ═══════════════════════════════════════════ 
 
+async function initCRM() {
+  try {
+    const fetchLeads = async () => {
+      const { data } = await db.from('leads').select('*').is('deleted_at', null);
+      if (data && data.length) DATA.leads = data;
+    };
+    const fetchClientes = async () => {
+      const { data } = await db.from('clientes').select('*').is('deleted_at', null);
+      if (data && data.length) DATA.clientes = data;
+    };
+    const fetchCampanhas = async () => {
+      const { data } = await db.from('campanhas').select('*');
+      if (data && data.length) DATA.campanhas = data;
+    };
+    const fetchDrafts = async () => {
+      const { data } = await db.from('drafts').select('*')
+        .gt('expira_em', new Date().toISOString());
+      if (data) { drafts = data; updateDraftBadge(); }
+    };
+    await Promise.all([fetchLeads(), fetchClientes(), fetchCampanhas(), fetchDrafts()]);
+  } catch(e) {
+    console.warn('Banco indisponível, usando dados locais:', e);
+  }
+  document.getElementById('admin-overlay').classList.remove('open');
+  document.getElementById('app').style.display = 'flex';
+  rendered['dashboard'] = true;
+  renderDashboard();
+  toast('Bem-vindo ao LexFlow!', 'success');
+  setTimeout(() => showPersistentAlert(
+    '⚠️ Saldo baixo — Rocha Imobiliário: 83% do orçamento consumido'
+  ), 2000);
+}
+  
   /* ==========================================
    TEMPO REAL - SUPABASE REALTIME
    ========================================== */
