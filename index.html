@@ -780,16 +780,16 @@ select.input { cursor: pointer; }
     <div class="admin-title">LexFlow CRM</div>
     <div class="admin-sub">Painel administrativo · Queiroz Estratégia</div>
     <div class="input-group">
-      <label class="input-label">Usuário</label>
-      <input class="input" id="admin-user" placeholder="seu@email.com" autocomplete="email">
+      <label class="input-label">Email</label>
+      <input class="input" id="admin-user" type="email" placeholder="seu@email.com" autocomplete="email">
     </div>
-    <div class="input-group">
+    <div class="input-group" style="margin-top:10px">
       <label class="input-label">Senha</label>
       <input class="input" id="admin-pass" type="password" placeholder="••••••••••" autocomplete="current-password">
     </div>
-    <div class="admin-err" id="admin-err">Credenciais inválidas. Tente novamente.</div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;padding:11px 16px;font-size:14px" onclick="doAdminLogin()">Entrar no Painel</button>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:16px;text-align:center">Hospedagem recomendada: Vercel · Railway · Supabase</div>
+    <div class="admin-err" id="admin-err" style="display:none">Email ou senha incorretos. Tente novamente.</div>
+    <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center;margin-top:18px;padding:11px 16px;font-size:14px" onclick="doAdminLogin()">Entrar no Painel</button>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:16px;text-align:center">Acesse com o email cadastrado no Supabase</div>
   </div>
 </div>
 
@@ -1161,6 +1161,8 @@ async function initCRM() {
   } catch(e) {
     console.warn('Banco indisponível, usando dados locais:', e);
   }
+  const btn = document.getElementById('login-btn');
+  if (btn) { btn.textContent = 'Entrar no Painel'; btn.disabled = false; }
   document.getElementById('admin-overlay').classList.remove('open');
   document.getElementById('app').style.display = 'flex';
   rendered['dashboard'] = true;
@@ -1189,7 +1191,7 @@ function activateRealtime() {
    AUTH — Verifica sessão existente ao carregar
 ═══════════════════════════════════════════════ */
 db.auth.onAuthStateChange((event, session) => {
-  if (session && !document.getElementById('app').style.display.includes('flex')) {
+  if (event === 'SIGNED_IN' && session && document.getElementById('app').style.display !== 'flex') {
     currentUser = session.user;
     initCRM();
   }
@@ -1258,25 +1260,42 @@ async function doAdminLogin() {
   const email    = document.getElementById('admin-user').value.trim();
   const password = document.getElementById('admin-pass').value;
   const errEl    = document.getElementById('admin-err');
-  const btn      = document.querySelector('#admin-overlay .btn-primary');
+  const btn      = document.getElementById('login-btn');
 
-  btn.textContent = 'Entrando...';
-  btn.disabled = true;
-
-  const { data, error } = await db.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    errEl.textContent = 'Email ou senha incorretos.';
+  if (!email || !password) {
+    errEl.textContent = 'Preencha o email e a senha.';
     errEl.style.display = 'block';
-    btn.textContent = 'Entrar no Painel';
-    btn.disabled = false;
-    document.getElementById('admin-pass').value = '';
-    setTimeout(() => errEl.style.display = 'none', 4000);
+    setTimeout(() => errEl.style.display = 'none', 3000);
     return;
   }
 
-  currentUser = data.user;
-  await initCRM();
+  btn.textContent = 'Entrando...';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      errEl.textContent = 'Email ou senha incorretos. Verifique os dados.';
+      errEl.style.display = 'block';
+      btn.textContent = 'Entrar no Painel';
+      btn.disabled = false;
+      document.getElementById('admin-pass').value = '';
+      setTimeout(() => errEl.style.display = 'none', 5000);
+      return;
+    }
+
+    currentUser = data.user;
+    await initCRM();
+
+  } catch(e) {
+    errEl.textContent = 'Erro de conexão. Verifique sua internet.';
+    errEl.style.display = 'block';
+    btn.textContent = 'Entrar no Painel';
+    btn.disabled = false;
+    setTimeout(() => errEl.style.display = 'none', 5000);
+  }
 }
 /* ═══════════════════════════════════════════════
    SIDEBAR
@@ -2070,6 +2089,13 @@ function showIntegration(){toast('Abrindo configuração Google Sheets...','info
 ═══════════════════════════════════════════════ */
 window.addEventListener('load',()=>{
   document.getElementById('admin-overlay').classList.add('open');
+  document.getElementById('admin-user').focus();
+  document.getElementById('admin-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doAdminLogin();
+  });
+  document.getElementById('admin-user').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('admin-pass').focus();
+  });
 });
 window.addEventListener('resize',()=>{
   if(document.querySelector('.section.active')?.id==='sec-dashboard')renderDashboard();
