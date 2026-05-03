@@ -780,7 +780,7 @@ select.input { cursor: pointer; }
     <div class="admin-sub">Painel administrativo · Queiroz Estratégia</div>
     <div class="input-group">
       <label class="input-label">Usuário</label>
-      <input class="input" id="admin-user" placeholder="queirozestrategia" autocomplete="username">
+      <input class="input" id="admin-user" placeholder="seu@email.com" autocomplete="email">
     </div>
     <div class="input-group">
       <label class="input-label">Senha</label>
@@ -1252,10 +1252,32 @@ function dismissAlert(){
    ADMIN LOGIN
 ═══════════════════════════════════════════════ */
 
-async function doAdminLogin() { const email = document.getElementById('admin-user').value.trim(); const password = document.getElementById('admin-pass').value; const errEl = document.getElementById('admin-err'); const btn = document.querySelector('#admin-overlay .btn-primary'); // Visual de loading btn.textContent = 'Entrando...'; btn.disabled = true; const { data, error } = await db.auth.signInWithPassword({ email, password }); if (error) { errEl.textContent = 'Email ou senha incorretos. Tente novamente.'; errEl.style.display = 'block'; btn.textContent = 'Entrar no Painel'; btn.disabled = false; document.getElementById('admin-pass').value = ''; setTimeout(() => errEl.style.display = 'none', 4000); return; } // Login OK currentUser = data.user; document.getElementById('admin-overlay').classList.remove('open'); document.getElementById('app').style.display = 'flex'; await initCRM(); toast('Bem-vindo ao LexFlow!', 'success'); } // Logout (adicione no sidebar footer ou config) async function doLogout() { await db.auth.signOut(); location.reload(); }
-}
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('admin-overlay').classList.contains('open'))doAdminLogin();});
+async function doAdminLogin() {
+  const email    = document.getElementById('admin-user').value.trim();
+  const password = document.getElementById('admin-pass').value;
+  const errEl    = document.getElementById('admin-err');
+  const btn      = document.querySelector('#admin-overlay .btn-primary');
 
+  btn.textContent = 'Entrando...';
+  btn.disabled = true;
+
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errEl.textContent = 'Email ou senha incorretos.';
+    errEl.style.display = 'block';
+    btn.textContent = 'Entrar no Painel';
+    btn.disabled = false;
+    document.getElementById('admin-pass').value = '';
+    setTimeout(() => errEl.style.display = 'none', 4000);
+    return;
+  }
+
+  document.getElementById('admin-overlay').classList.remove('open');
+  document.getElementById('app').style.display = 'flex';
+  renderDashboard();
+  toast('Bem-vindo ao LexFlow!', 'success');
+}
 /* ═══════════════════════════════════════════════
    SIDEBAR
 ═══════════════════════════════════════════════ */
