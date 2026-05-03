@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LexFlow CRM — Queiroz Estratégia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS — LIGHT BI THEME
+═══════════════════════════════════════════════ */
+:root {
+  /* Backgrounds */
+  --bg:        #F5F6F8;
+  --card:      #FFFFFF;
+  --card-border: #E3E6EB;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px #E3E6EB;
+
+  /* Sidebar */
+  --sidebar-bg:     #2F3542;
+  --sidebar-active: #3B4252;
+  --sidebar-text:   #DDE1E7;
+  --sidebar-muted:  #8B95A5;
+  --sidebar-border: rgba(255,255,255,0.06);
+
+  /* Topbar */
+  --topbar-bg: #FFFFFF;
+  --topbar-border: #E3E6EB;
+
+  /* Typography */
+  --text-main:  #2B2F33;
+  --text-sub:   #6B7280;
+  --text-muted: #9CA3AF;
+
+  /* Chart accent colors */
+  --purple: #6C5CE7;
+  --purple-dim: rgba(108,92,231,0.12);
+  --blue:   #2D9CDB;
+  --blue-dim: rgba(45,156,219,0.12);
+  --yellow: #F2C94C;
+  --yellow-dim: rgba(242,201,76,0.12);
+  --green:  #27AE60;
+  --green-dim: rgba(39,174,96,0.12);
+  --pink:   #FF7675;
+  --pink-dim: rgba(255,118,117,0.12);
+  --orange: #F39C12;
+  --orange-dim: rgba(243,156,18,0.12);
+
+  /* Functional */
+  --success: #27AE60;
+  --success-dim: rgba(39,174,96,0.1);
+  --warning: #F2C94C;
+  --warning-dim: rgba(242,201,76,0.12);
+  --danger:  #FF7675;
+  --danger-dim: rgba(255,118,117,0.1);
+  --info:    #2D9CDB;
+  --info-dim: rgba(45,156,219,0.1);
+
+  /* Layout */
+  --sidebar-w: 240px;
+  --topbar-h: 58px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* Typography */
+  --font: 'Inter', -apple-system, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text-main); font-family: var(--font); font-size: 14px; overflow: hidden; -webkit-font-smoothing: antialiased; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* ═══════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════ */
+.app { display: flex; height: 100vh; }
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  flex-shrink: 0;
+  transition: width 0.25s ease, min-width 0.25s ease;
+}
+.sidebar.collapsed { width: 60px; min-width: 60px; }
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-badge,
+.sidebar.collapsed .nav-section,
+.sidebar.collapsed .sidebar-brand-text,
+.sidebar.collapsed .sidebar-footer-text { opacity: 0; pointer-events: none; width: 0; overflow: hidden; }
+.sidebar.collapsed .sidebar-logo { justify-content: center; }
+.sidebar.collapsed .nav-item { padding: 10px 0; justify-content: center; }
+.sidebar.collapsed .hamburger { margin: 0 auto; }
+
+/* Logo area */
+.sidebar-logo {
+  padding: 18px 16px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--sidebar-border);
+  flex-shrink: 0;
+}
+.sidebar-logo-mark {
+  width: 32px; height: 32px;
+  background: var(--purple);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+  flex-shrink: 0; letter-spacing: -1px;
+}
+.sidebar-brand-text { transition: opacity 0.2s; }
+.sidebar-brand-name {
+  font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; line-height: 1.1;
+}
+.sidebar-brand-sub {
+  font-size: 11px; color: var(--sidebar-muted); margin-top: 1px;
+}
+
+/* Hamburger */
+.hamburger {
+  width: 28px; height: 28px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4.5px;
+  cursor: pointer; border-radius: 6px; transition: background 0.15s;
+  flex-shrink: 0; margin-left: auto;
+}
+.hamburger:hover { background: rgba(255,255,255,0.08); }
+.hamburger span { width: 14px; height: 1.5px; background: var(--sidebar-muted); border-radius: 2px; transition: all 0.25s; display: block; }
+
+/* Nav sections */
+.nav-section {
+  font-size: 10px; font-weight: 600; color: var(--sidebar-muted);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 18px 18px 6px;
+  transition: opacity 0.2s;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; cursor: pointer;
+  transition: all 0.15s; position: relative;
+  font-size: 13px; font-weight: 500; color: var(--sidebar-text);
+  user-select: none; white-space: nowrap;
+  border-radius: 0; margin: 1px 8px; border-radius: 8px;
+}
+.nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.nav-item.active { background: var(--purple); color: #fff; }
+.nav-item.active .nav-icon { color: #fff; }
+.nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; color: var(--sidebar-muted); transition: color 0.15s; }
+.nav-item:hover .nav-icon { color: #fff; }
+.nav-label { flex: 1; transition: opacity 0.2s; }
+.nav-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 20px; flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.nb-red { background: var(--pink); color: #fff; }
+.nb-green { background: var(--green); color: #fff; }
+.nb-amber { background: var(--yellow); color: #2B2F33; }
+.nb-purple { background: var(--purple); color: #fff; }
+
+/* Sidebar footer */
+.sidebar-footer {
+  margin-top: auto; padding: 14px 16px;
+  border-top: 1px solid var(--sidebar-border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--purple); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.sidebar-footer-text { transition: opacity 0.2s; }
+.sft-name { font-size: 12px; font-weight: 600; color: #fff; }
+.sft-role { font-size: 11px; color: var(--sidebar-muted); margin-top: 1px; }
+
+/* ═══════════════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════════════ */
+.main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Topbar */
+.topbar {
+  height: var(--topbar-h); min-height: var(--topbar-h);
+  background: var(--topbar-bg); border-bottom: 1px solid var(--topbar-border);
+  display: flex; align-items: center; padding: 0 28px; gap: 16px;
+  flex-shrink: 0;
+}
+.topbar-title { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: -0.3px; }
+.topbar-sub { font-size: 12px; color: var(--text-sub); margin-left: 2px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.topbar-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 4px 10px;
+  border-radius: 20px; cursor: pointer; transition: all 0.15s;
+}
+.tb-online { background: var(--success-dim); color: var(--success); border: 1px solid rgba(39,174,96,0.25); }
+.tb-warn { background: var(--warning-dim); color: #B7890A; border: 1px solid rgba(242,201,76,0.35); }
+.online-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+/* Main scrollable content */
+.main-content { flex: 1; overflow-y: auto; padding: 28px; }
+
+/* ═══════════════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════════════ */
+.section { display: none; animation: fadeIn 0.2s ease; }
+.section.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--card-shadow);
+}
+.card-sm { padding: 18px 20px; }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; gap: 12px;
+}
+.card-label {
+  font-size: 12px; font-weight: 600; color: var(--text-sub);
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.card-value {
+  font-size: 32px; font-weight: 800; color: var(--text-main);
+  line-height: 1; letter-spacing: -1px;
+}
+.card-value-sm { font-size: 24px; }
+.card-delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 600; margin-top: 6px;
+}
+.delta-up { color: var(--success); }
+.delta-down { color: var(--pink); }
+.card-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+/* KPI Card specific */
+.kpi-card { position: relative; overflow: hidden; }
+.kpi-card::after {
+  content: ''; position: absolute; right: -20px; top: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  opacity: 0.08;
+}
+.kpi-purple::after { background: var(--purple); }
+.kpi-blue::after { background: var(--blue); }
+.kpi-green::after { background: var(--green); }
+.kpi-yellow::after { background: var(--yellow); }
+.kpi-pink::after { background: var(--pink); }
+.kpi-orange::after { background: var(--orange); }
+
+.kpi-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; margin-bottom: 14px;
+}
+.ki-purple { background: var(--purple-dim); color: var(--purple); }
+.ki-blue   { background: var(--blue-dim);   color: var(--blue); }
+.ki-green  { background: var(--green-dim);  color: var(--green); }
+.ki-yellow { background: var(--yellow-dim); color: #B7890A; }
+.ki-pink   { background: var(--pink-dim);   color: var(--pink); }
+.ki-orange { background: var(--orange-dim); color: var(--orange); }
+
+/* ═══════════════════════════════════════════════
+   GRID
+═══════════════════════════════════════════════ */
+.grid-6 { display: grid; grid-template-columns: repeat(6,1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+.grid-3-1 { display: grid; grid-template-columns: 3fr 1fr; gap: 16px; }
+.mb16 { margin-bottom: 16px; }
+.mb24 { margin-bottom: 24px; }
+
+/* ═══════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px;
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid; transition: all 0.15s;
+  white-space: nowrap; user-select: none; line-height: 1;
+}
+.btn-primary { background: var(--purple); color: #fff; border-color: var(--purple); }
+.btn-primary:hover { background: #5a4bd1; border-color: #5a4bd1; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,92,231,0.35); }
+.btn-outline { background: transparent; color: var(--purple); border-color: var(--purple); }
+.btn-outline:hover { background: var(--purple-dim); }
+.btn-ghost { background: transparent; color: var(--text-sub); border-color: var(--card-border); }
+.btn-ghost:hover { background: var(--bg); color: var(--text-main); border-color: #C9CDD6; }
+.btn-danger { background: transparent; color: var(--pink); border-color: var(--pink); }
+.btn-danger:hover { background: var(--danger-dim); }
+.btn-success { background: var(--green); color: #fff; border-color: var(--green); }
+.btn-success:hover { background: #219a52; border-color: #219a52; }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+.btn-xs { padding: 4px 9px; font-size: 11px; border-radius: 5px; }
+.btn:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════════════════════
+   TAGS / BADGES
+═══════════════════════════════════════════════ */
+.tag {
+  display: inline-flex; align-items: center; padding: 3px 9px;
+  border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+}
+.tag-purple { background: var(--purple-dim); color: var(--purple); }
+.tag-blue   { background: var(--blue-dim);   color: var(--blue); }
+.tag-green  { background: var(--green-dim);  color: var(--green); }
+.tag-yellow { background: var(--yellow-dim); color: #8B6500; }
+.tag-pink   { background: var(--danger-dim); color: var(--pink); }
+.tag-gray   { background: #F3F4F6; color: #6B7280; }
+.tag-orange { background: var(--orange-dim); color: var(--orange); }
+
+/* Dot status */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot-green { background: var(--green); }
+.dot-yellow { background: var(--yellow); }
+.dot-red { background: var(--pink); }
+.dot-blue { background: var(--blue); }
+.dot-purple { background: var(--purple); }
+
+/* ═══════════════════════════════════════════════
+   TABLES
+═══════════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  padding: 11px 14px; text-align: left;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+  color: var(--text-sub); text-transform: uppercase;
+  background: #F9FAFB; border-bottom: 1px solid var(--card-border);
+  white-space: nowrap;
+}
+td { padding: 11px 14px; border-bottom: 1px solid #F3F4F6; color: var(--text-sub); vertical-align: middle; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFBFC; }
+.td-main { color: var(--text-main) !important; font-weight: 600; }
+
+/* ═══════════════════════════════════════════════
+   ALERTS / BANNERS
+═══════════════════════════════════════════════ */
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 16px; border-radius: var(--radius); margin-bottom: 10px;
+  font-size: 13px; line-height: 1.6;
+}
+.alert-warn  { background: #FFFBEA; border: 1px solid #FDE68A; color: #92400E; }
+.alert-danger{ background: #FFF5F5; border: 1px solid #FECACA; color: #991B1B; }
+.alert-ok    { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+.alert-info  { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+.alert b { font-weight: 700; }
+
+/* ═══════════════════════════════════════════════
+   PROGRESS BARS
+═══════════════════════════════════════════════ */
+.progress-wrap { background: #F3F4F6; border-radius: 20px; height: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 20px; transition: width 0.6s ease; }
+.pf-purple { background: var(--purple); }
+.pf-green  { background: var(--green); }
+.pf-blue   { background: var(--blue); }
+.pf-yellow { background: var(--yellow); }
+.pf-pink   { background: var(--pink); }
+
+/* ═══════════════════════════════════════════════
+   KANBAN
+═══════════════════════════════════════════════ */
+.kanban-wrap { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; }
+.kanban-col {
+  min-width: 200px; max-width: 200px;
+  background: #F9FAFB; border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg); display: flex; flex-direction: column;
+}
+.kanban-col-header {
+  padding: 12px 14px; border-bottom: 1px solid var(--card-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.kanban-col-title { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+.kanban-col-count {
+  font-size: 11px; font-weight: 700; padding: 1px 8px;
+  border-radius: 20px; background: var(--card); border: 1px solid var(--card-border);
+  color: var(--text-sub);
+}
+.kanban-cards { padding: 8px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.kanban-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--radius); padding: 12px; cursor: pointer;
+  transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.kanban-card:hover { border-color: var(--purple); box-shadow: 0 4px 12px rgba(108,92,231,0.12); transform: translateY(-1px); }
+.kc-name { font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+.kc-office { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+.kc-score-bar { margin: 8px 0 4px; }
+.kc-score-label { font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 3px; }
+.kc-score-label b { color: var(--purple); font-weight: 700; }
+.kc-actions-row { display: flex; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #F3F4F6; }
+
+/* ═══════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════ */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: flex-start; justify-content: flex-end; backdrop-filter: blur(2px); }
+.modal-overlay.open { display: flex; }
+.modal-panel { width: 520px; height: 100vh; background: var(--card); overflow-y: auto; animation: slideIn 0.25s ease; box-shadow: -8px 0 40px rgba(0,0,0,0.12); }
+@keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
+.modal-header { padding: 22px 26px; border-bottom: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--card); z-index: 10; }
+.modal-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+.modal-close { font-size: 18px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 4px 6px; border-radius: 6px; transition: all 0.15s; }
+.modal-close:hover { background: var(--bg); color: var(--text-main); }
+.modal-body { padding: 24px 26px; }
+
+/* Confirm Dialog */
+.confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.confirm-overlay.open { display: flex; }
+.confirm-box { background: var(--card); border-radius: var(--radius-xl); padding: 32px; max-width: 380px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.confirm-title { font-size: 17px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
+.confirm-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 24px; line-height: 1.6; }
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* Toast */
+#toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 9998; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.toast {
+  background: #1F2937; color: #F9FAFB;
+  border-radius: 10px; padding: 11px 20px;
+  font-size: 13px; font-weight: 500;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  display: flex; align-items: center; gap: 8px;
+  animation: toastIn 0.25s ease;
+}
+.toast.success { background: var(--green); }
+.toast.error   { background: var(--pink); }
+.toast.info    { background: var(--blue); }
+@keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══════════════════════════════════════════════
+   PERSISTENT ALERT
+═══════════════════════════════════════════════ */
+#persistent-alert {
+  display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: #fff; border: 1px solid var(--card-border); border-left: 4px solid var(--pink);
+  border-radius: var(--radius); padding: 14px 18px; max-width: 380px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  display: none; flex-direction: column; gap: 10px;
+}
+#persistent-alert.show { display: flex; }
+.pa-icon { font-size: 16px; }
+.pa-text { font-size: 13px; color: var(--text-main); font-weight: 500; }
+.pa-btn { background: var(--pink); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; align-self: flex-start; }
+
+/* ═══════════════════════════════════════════════
+   ADMIN LOGIN
+═══════════════════════════════════════════════ */
+#admin-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9000;
+  align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #667eea22, #764ba222), var(--bg);
+}
+#admin-overlay.open { display: flex; }
+.admin-box {
+  background: var(--card); border-radius: 20px; padding: 40px;
+  width: 400px; box-shadow: 0 24px 80px rgba(0,0,0,0.1), 0 0 0 1px var(--card-border);
+}
+.admin-logo-mark { width: 48px; height: 48px; background: var(--purple); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #fff; margin: 0 auto 16px; }
+.admin-title { font-size: 22px; font-weight: 800; color: var(--text-main); text-align: center; letter-spacing: -0.5px; margin-bottom: 4px; }
+.admin-sub { font-size: 13px; color: var(--text-sub); text-align: center; margin-bottom: 28px; }
+.admin-err { font-size: 12px; color: var(--pink); margin-top: 8px; text-align: center; display: none; }
+
+/* ═══════════════════════════════════════════════
+   INPUTS
+═══════════════════════════════════════════════ */
+.input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.input-label { font-size: 12px; font-weight: 600; color: var(--text-sub); letter-spacing: 0.3px; }
+.input {
+  background: var(--bg); border: 1px solid var(--card-border);
+  color: var(--text-main); font-family: var(--font); font-size: 13px;
+  padding: 9px 13px; border-radius: 8px; outline: none; width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-dim); }
+select.input { cursor: pointer; }
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+.tabs { display: flex; gap: 2px; background: #F3F4F6; border-radius: 10px; padding: 4px; margin-bottom: 22px; width: fit-content; }
+.tab { padding: 7px 16px; font-size: 12px; font-weight: 600; color: var(--text-sub); cursor: pointer; border-radius: 7px; transition: all 0.15s; }
+.tab:hover { color: var(--text-main); background: rgba(255,255,255,0.6); }
+.tab.active { background: var(--card); color: var(--purple); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+/* ═══════════════════════════════════════════════
+   METRIC ROW
+═══════════════════════════════════════════════ */
+.metric-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+.metric-row:last-child { border-bottom: none; }
+.metric-label { font-size: 13px; color: var(--text-sub); }
+.metric-val { font-size: 13px; font-weight: 700; color: var(--text-main); }
+
+/* ═══════════════════════════════════════════════
+   SECTION DIVIDERS
+═══════════════════════════════════════════════ */
+.section-sep { height: 1px; background: var(--card-border); margin: 24px 0; }
+.subsection-title {
+  font-size: 11px; font-weight: 700; color: var(--text-sub);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.subsection-toggle { cursor: pointer; font-size: 11px; color: var(--text-muted); transition: color 0.15s; }
+.subsection-toggle:hover { color: var(--purple); }
+.collapsible-content { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; }
+.collapsible-content.hidden { max-height: 0 !important; opacity: 0; pointer-events: none; }
+
+/* ═══════════════════════════════════════════════
+   TRAFFIC LIGHTS
+═══════════════════════════════════════════════ */
+.traffic-light {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: #FAFBFC;
+  border: 1px solid var(--card-border); border-radius: var(--radius);
+  margin-bottom: 8px; transition: all 0.15s;
+}
+.traffic-light:hover { border-color: #C9CDD6; }
+.tl-label { font-size: 13px; color: var(--text-main); font-weight: 500; flex: 1; }
+.tl-score { font-size: 15px; font-weight: 800; }
+.tl-bar { width: 80px; }
+.tl-green { color: var(--green); }
+.tl-yellow { color: #B7890A; }
+.tl-red { color: var(--pink); }
+
+/* ═══════════════════════════════════════════════
+   CAMPAIGN CARDS
+═══════════════════════════════════════════════ */
+.camp-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg); padding: 18px;
+  box-shadow: var(--card-shadow); transition: all 0.15s;
+}
+.camp-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.09); transform: translateY(-1px); }
+.camp-card.alert-card { border-left: 3px solid var(--yellow); }
+.camp-client { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+.camp-platform-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.pt-google { background: #EBF5FB; color: #2D9CDB; }
+.pt-meta   { background: #EEF2FF; color: #6C5CE7; }
+.camp-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.camp-metric { background: #F9FAFB; border-radius: 8px; padding: 9px 11px; }
+.cm-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.cm-val { font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 2px; }
+.cm-sub { font-size: 10px; color: var(--text-muted); }
+.cm-good { color: var(--green) !important; }
+.cm-bad  { color: var(--pink) !important; }
+
+/* ═══════════════════════════════════════════════
+   AGENT CARDS
+═══════════════════════════════════════════════ */
+.agent-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg); padding: 18px;
+  box-shadow: var(--card-shadow); position: relative; overflow: hidden;
+}
+.agent-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--purple); }
+.agent-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
+.agent-status-line { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.agent-model { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+/* ═══════════════════════════════════════════════
+   FINANCIAL
+═══════════════════════════════════════════════ */
+.fin-kpi { text-align: center; padding: 18px; background: #F9FAFB; border: 1px solid var(--card-border); border-radius: var(--radius); }
+.fin-kpi-val { font-size: 22px; font-weight: 800; color: var(--text-main); }
+.fin-kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+.fin-kpi-delta { font-size: 12px; font-weight: 600; margin-top: 3px; }
+
+/* ═══════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════ */
+.settings-group { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 20px 22px; margin-bottom: 16px; box-shadow: var(--card-shadow); }
+.settings-group-title { font-size: 11px; font-weight: 700; color: var(--purple); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--card-border); }
+
+/* ═══════════════════════════════════════════════
+   TOGGLE
+═══════════════════════════════════════════════ */
+.toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
+.toggle-wrap:last-child { border-bottom: none; }
+.toggle-label { font-size: 13px; font-weight: 500; color: var(--text-main); }
+.toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.toggle { position: relative; width: 38px; height: 21px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #E5E7EB; border-radius: 20px; cursor: pointer; transition: 0.3s; }
+.toggle-slider:before { content: ''; position: absolute; width: 15px; height: 15px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.toggle input:checked + .toggle-slider { background: var(--purple); }
+.toggle input:checked + .toggle-slider:before { transform: translateX(17px); }
+
+/* ═══════════════════════════════════════════════
+   DRAFT / LIXEIRA
+═══════════════════════════════════════════════ */
+.draft-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); margin-bottom: 8px; box-shadow: var(--card-shadow); }
+.draft-info { flex: 1; }
+.draft-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
+.draft-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.draft-timer { font-size: 11px; font-weight: 600; color: #B7890A; margin-top: 2px; }
+
+/* ═══════════════════════════════════════════════
+   HEALTH ITEMS
+═══════════════════════════════════════════════ */
+.health-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: #F9FAFB; border: 1px solid var(--card-border); border-radius: var(--radius); margin-bottom: 6px; }
+.health-label { font-size: 13px; color: var(--text-sub); flex: 1; }
+.health-val { font-size: 13px; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════
+   GOAL ITEMS
+═══════════════════════════════════════════════ */
+.goal-item { padding: 14px 0; border-bottom: 1px solid #F3F4F6; }
+.goal-item:last-child { border-bottom: none; }
+.goal-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.goal-label { font-size: 13px; color: var(--text-sub); }
+.goal-pct { font-size: 13px; font-weight: 700; color: var(--purple); }
+
+/* ═══════════════════════════════════════════════
+   TIMELINE
+═══════════════════════════════════════════════ */
+.timeline { position: relative; padding-left: 22px; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 1px; background: #E5E7EB; }
+.timeline-item { position: relative; margin-bottom: 16px; }
+.timeline-item::before { content: ''; position: absolute; left: -19px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--purple); border: 2px solid var(--card); }
+.timeline-date { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+.timeline-text { font-size: 13px; color: var(--text-sub); }
+
+/* ═══════════════════════════════════════════════
+   FUNNEL
+═══════════════════════════════════════════════ */
+.funnel-steps { display: flex; gap: 0; overflow-x: auto; }
+.funnel-step { flex: 1; min-width: 100px; text-align: center; padding: 16px 8px; position: relative; }
+.funnel-step:not(:last-child)::after { content: '→'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+.funnel-pct { font-size: 24px; font-weight: 800; color: var(--purple); }
+.funnel-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+.funnel-days { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+
+/* ═══════════════════════════════════════════════
+   WA ITEMS
+═══════════════════════════════════════════════ */
+.wa-queue-item { display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); margin-bottom: 8px; box-shadow: var(--card-shadow); }
+.wa-number { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.wa-reason { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.wa-time { font-size: 12px; font-weight: 600; color: #B7890A; margin-left: auto; white-space: nowrap; }
+
+/* ═══════════════════════════════════════════════
+   COMPETITOR
+═══════════════════════════════════════════════ */
+.competitor-own td { background: rgba(108,92,231,0.04) !important; border-left: 3px solid var(--purple) !important; }
+
+/* ═══════════════════════════════════════════════
+   AI ANALYSIS BOX
+═══════════════════════════════════════════════ */
+.ai-box {
+  background: linear-gradient(135deg, rgba(108,92,231,0.05), rgba(45,156,219,0.03));
+  border: 1px solid rgba(108,92,231,0.2); border-radius: var(--radius-lg); padding: 18px;
+}
+.ai-box-title { font-size: 11px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.ai-insight { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F3F4F6; font-size: 13px; color: var(--text-sub); line-height: 1.6; }
+.ai-insight:last-child { border-bottom: none; }
+.ai-insight-icon { font-size: 14px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════
+   INTEGRATION BADGES
+═══════════════════════════════════════════════ */
+.int-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; cursor: pointer; transition: all 0.15s; }
+.int-connected   { background: var(--success-dim); color: var(--green);   border-color: rgba(39,174,96,0.3); }
+.int-pending     { background: var(--warning-dim); color: #B7890A;        border-color: rgba(242,201,76,0.4); }
+.int-disconnected{ background: var(--danger-dim);  color: var(--pink);    border-color: rgba(255,118,117,0.3); }
+
+/* ═══════════════════════════════════════════════
+   REPORT BUTTONS
+═══════════════════════════════════════════════ */
+.report-btn-email { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(45,156,219,0.3); }
+.report-btn-email:hover { background: rgba(45,156,219,0.2); }
+.report-btn-wa { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; background: rgba(37,211,102,0.1); color: #15803d; border: 1px solid rgba(37,211,102,0.3); }
+.report-btn-wa:hover { background: rgba(37,211,102,0.18); }
+
+/* ═══════════════════════════════════════════════
+   KEYWORD / COPY CARDS
+═══════════════════════════════════════════════ */
+.kw-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 16px; transition: all 0.15s; box-shadow: var(--card-shadow); }
+.kw-card:hover { border-color: var(--purple); box-shadow: 0 4px 16px rgba(108,92,231,0.1); }
+.kw-term { font-size: 14px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
+.kw-insight { font-size: 13px; color: var(--text-sub); line-height: 1.6; }
+
+.copy-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--card-shadow); }
+.copy-headline { font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+.copy-cta { font-size: 13px; color: var(--purple); font-weight: 700; margin-top: 10px; }
+.copy-angle { font-size: 11px; color: #B7890A; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ═══════════════════════════════════════════════
+   LOG ROWS — ACCESSIBLE
+═══════════════════════════════════════════════ */
+.log-row-err td { color: var(--pink) !important; }
+.td-status-ok  { color: var(--green) !important; font-weight: 700; }
+.td-status-err { color: var(--pink)  !important; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════
+   API STATUS
+═══════════════════════════════════════════════ */
+.api-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F3F4F6; font-size: 13px; }
+.api-row:last-child { border-bottom: none; }
+.api-name { color: var(--text-sub); flex: 1; }
+.api-ok   { color: var(--green); font-weight: 700; }
+.api-warn { color: #B7890A; font-weight: 700; }
+.api-err  { color: var(--pink); font-weight: 700; }
+.api-date { font-size: 11px; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════════════
+   FLOW DIAGRAM
+═══════════════════════════════════════════════ */
+.flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 14px 0; }
+.flow-box { background: #F9FAFB; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--text-sub); text-align: center; min-width: 110px; }
+.flow-box b { display: block; color: var(--purple); font-size: 13px; margin-bottom: 2px; }
+.flow-arr { font-size: 16px; color: var(--text-muted); padding: 0 8px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════
+   NPS
+═══════════════════════════════════════════════ */
+.nps-good { color: var(--green); font-weight: 700; }
+.nps-ok   { color: #B7890A;     font-weight: 700; }
+.nps-bad  { color: var(--pink); font-weight: 700; }
+</style>
+<!-- Supabase SDK --> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- PERSISTENT ALERT -->
+<div id="persistent-alert">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <span class="pa-icon">⚠️</span>
+    <div>
+      <div class="pa-text" id="pa-text">Saldo baixo em campanha</div>
+      <button class="pa-btn" onclick="dismissAlert()" style="margin-top:8px">OK — Ciente</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div style="font-size:28px;margin-bottom:10px">⚠️</div>
+    <div class="confirm-title" id="confirm-title">Confirmar ação</div>
+    <div class="confirm-desc" id="confirm-desc">Tem certeza?</div>
+    <div class="confirm-actions">
+      <span class="btn btn-ghost" onclick="confirmResolve(false)">Cancelar</span>
+      <span class="btn btn-danger" id="confirm-ok-btn" onclick="confirmResolve(true)">Confirmar</span>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="admin-overlay">
+  <div class="admin-box">
+    <div class="admin-logo-mark">L</div>
+    <div class="admin-title">LexFlow CRM</div>
+    <div class="admin-sub">Painel administrativo · Queiroz Estratégia</div>
+    <div class="input-group">
+      <label class="input-label">Usuário</label>
+      <input class="input" id="admin-user" placeholder="queirozestrategia" autocomplete="username">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Senha</label>
+      <input class="input" id="admin-pass" type="password" placeholder="••••••••••" autocomplete="current-password">
+    </div>
+    <div class="admin-err" id="admin-err">Credenciais inválidas. Tente novamente.</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;padding:11px 16px;font-size:14px" onclick="doAdminLogin()">Entrar no Painel</button>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:16px;text-align:center">Hospedagem recomendada: Vercel · Railway · Supabase</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">L</div>
+      <div class="sidebar-brand-text">
+        <div class="sidebar-brand-name">LexFlow</div>
+        <div class="sidebar-brand-sub">Queiroz Estratégia</div>
+      </div>
+      <div class="hamburger" onclick="toggleSidebar()" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">⊞</span><span class="nav-label">Dashboard Geral</span></div>
+    <div class="nav-item" onclick="nav('leads')"><span class="nav-icon">◈</span><span class="nav-label">Leads e Pipeline</span><span class="nav-badge nb-amber">15</span></div>
+    <div class="nav-item" onclick="nav('clientes')"><span class="nav-icon">◉</span><span class="nav-label">Clientes Ativos</span><span class="nav-badge nb-green">8</span></div>
+    <div class="nav-item" onclick="nav('vendas')"><span class="nav-icon">◇</span><span class="nav-label">Vendas e Propostas</span></div>
+
+    <div class="nav-section">Operacional</div>
+    <div class="nav-item" onclick="nav('trafego')"><span class="nav-icon">⬡</span><span class="nav-label">Tráfego Pago</span><span class="nav-badge nb-amber">2</span></div>
+    <div class="nav-item" onclick="nav('concorrentes')"><span class="nav-icon">◎</span><span class="nav-label">Concorrentes</span></div>
+    <div class="nav-item" onclick="nav('financeiro')"><span class="nav-icon">◫</span><span class="nav-label">Financeiro</span></div>
+
+    <div class="nav-section">Automação</div>
+    <div class="nav-item" onclick="nav('whatsapp')"><span class="nav-icon">⬡</span><span class="nav-label">WhatsApp e Email</span><span class="nav-badge nb-red">3</span></div>
+    <div class="nav-item" onclick="nav('agente')"><span class="nav-icon">◈</span><span class="nav-label">Agente IA — Status</span></div>
+
+    <div class="nav-section">Inteligência</div>
+    <div class="nav-item" onclick="nav('inteligencia')"><span class="nav-icon">◉</span><span class="nav-label">Intel. Tráfego Pago</span><span class="nav-badge nb-purple">NEW</span></div>
+    <div class="nav-item" onclick="nav('sheets')"><span class="nav-icon">◎</span><span class="nav-label">Planilhas + Integr.</span></div>
+    <div class="nav-item" onclick="nav('drafts')"><span class="nav-icon">◇</span><span class="nav-label">Lixeira (Drafts)</span><span class="nav-badge nb-amber" id="draft-count-badge">0</span></div>
+    <div class="nav-item" onclick="nav('config')"><span class="nav-icon">⊙</span><span class="nav-label">Configurações</span></div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-avatar">R</div>
+      <div class="sidebar-footer-text">
+        <div class="sft-name">Rafael Menezes</div>
+        <div class="sft-role">Gestor de Contas · Admin</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard Geral</div>
+        <div class="topbar-sub" id="topbar-sub">Atualizado agora · Mai 2025</div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-badge tb-online"><span class="online-dot"></span>Sistema Online</span>
+        <span class="int-badge int-pending" onclick="showIntegration()" style="font-size:11px">⚡ Conectar Sheets</span>
+        <span class="btn btn-ghost btn-sm" onclick="toast('Exportando relatório...','info')">↓ Exportar</span>
+        <span class="btn btn-primary btn-sm" onclick="toast('Dados atualizados!','success')">⟳ Atualizar</span>
+      </div>
+    </div>
+
+    <!-- SECTIONS -->
+    <div class="main-content">
+
+<!-- 01 DASHBOARD -->
+<div class="section active" id="sec-dashboard">
+  <div class="grid-6 mb24" id="dash-kpis"></div>
+  <div class="grid-2 mb16">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-label">Crescimento MRR — 6 meses</span>
+        <div style="display:flex;gap:10px;font-size:12px">
+          <span style="color:var(--green);font-weight:600">● Otimista</span>
+          <span style="color:var(--purple);font-weight:600">● Médio</span>
+          <span style="color:var(--blue);font-weight:600">● Conservador</span>
+        </div>
+      </div>
+      <div id="chart-mrr"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-label">Leads por Canal — 30 dias</span></div>
+      <div id="chart-leads-canal"></div>
+    </div>
+  </div>
+  <div class="grid-2-1">
+    <div class="card">
+      <div class="card-header"><span class="card-label">Últimas Ações do Agente IA</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Hora</th><th>Agente</th><th>Ação</th><th>Status</th></tr></thead><tbody id="tb-agente-dash"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-label">Semáforo de Qualidade</span></div>
+      <div id="semaforo-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 02 LEADS -->
+<div class="section" id="sec-leads">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Pipeline</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select class="input" style="width:auto;padding:6px 10px;font-size:12px" onchange="filterLeads()"><option>Todas as Áreas</option><option>Trabalhista</option><option>Previdenciário</option><option>Família</option><option>Criminal</option><option>Cível</option></select>
+        <select class="input" style="width:auto;padding:6px 10px;font-size:12px" onchange="filterLeads()"><option>Todos os Canais</option><option>Google Ads</option><option>Meta Ads</option><option>WhatsApp</option><option>Instagram</option><option>Indicação</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <span class="btn btn-ghost btn-sm" onclick="undoLast()">↩ Desfazer</span>
+      <span class="btn btn-primary btn-sm" onclick="openAddLead()">+ Novo Lead</span>
+    </div>
+  </div>
+  <div class="kanban-wrap mb24" id="kanban-board"></div>
+  <div class="section-sep"></div>
+  <div class="subsection-title">Métricas do Funil <span class="subsection-toggle" onclick="toggleSection('funnel-section')">▲</span></div>
+  <div class="collapsible-content" id="funnel-section">
+    <div class="card mb16"><div class="funnel-steps" id="funnel-metrics"></div></div>
+    <div class="grid-3">
+      <div class="card card-sm"><div class="card-label" style="margin-bottom:10px">Leads Perdidos — Mai</div><div class="card-value card-value-sm" style="color:var(--pink)">9</div><div class="card-meta">Principal: Sem orçamento</div></div>
+      <div class="card card-sm"><div class="card-label" style="margin-bottom:10px">Conversão Global</div><div class="card-value card-value-sm" style="color:var(--purple)">18.4%</div><div class="card-meta">Novo → Fechado</div></div>
+      <div class="card card-sm"><div class="card-label" style="margin-bottom:10px">Tempo Médio Total</div><div class="card-value card-value-sm">23d</div><div class="card-meta">Primeiro contato ao fechamento</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 03 CLIENTES -->
+<div class="section" id="sec-clientes">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div style="font-size:13px;color:var(--text-sub)">8 escritórios · MRR <b style="color:var(--text-main)">R$38.4k</b></div>
+    <span class="btn btn-primary btn-sm" onclick="toast('Abrindo formulário...','info')">+ Novo Cliente</span>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table><thead><tr><th>Escritório</th><th>Área</th><th>Serviços</th><th>Ticket</th><th>Meses</th><th>LTV</th><th>NPS</th><th>CS</th><th>Check-in</th><th>Ações</th></tr></thead>
+      <tbody id="tb-clientes"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- 04 VENDAS -->
+<div class="section" id="sec-vendas">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+    <span class="btn btn-primary btn-sm" onclick="toast('Abrindo nova proposta...','info')">+ Nova Proposta</span>
+  </div>
+  <div class="subsection-title">Propostas em Andamento <span class="subsection-toggle" onclick="toggleSection('prop-section')">▲</span></div>
+  <div class="collapsible-content" id="prop-section">
+    <div class="card mb16"><div class="table-wrap"><table>
+      <thead><tr><th>Cliente</th><th>Produto</th><th>Valor/mês</th><th>Enviada</th><th>Dias</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody id="tb-propostas"></tbody>
+    </table></div></div>
+  </div>
+  <div class="grid-2 mb16">
+    <div class="card"><div class="card-header"><span class="card-label">Fechamentos por Mês</span></div><div id="chart-fechamentos"></div></div>
+    <div class="card"><div class="card-header"><span class="card-label">Métricas de Conversão</span></div><div id="metricas-conversao"></div></div>
+  </div>
+  <div class="card"><div class="card-header"><span class="card-label">Metas de Vendas — Mai 2025</span></div><div id="metas-vendas"></div></div>
+</div>
+
+<!-- 05 TRÁFEGO -->
+<div class="section" id="sec-trafego">
+  <div id="alertas-trafego" class="mb16"></div>
+  <div class="subsection-title">Campanhas Ativas <span class="subsection-toggle" onclick="toggleSection('camp-section')">▲</span></div>
+  <div class="collapsible-content" id="camp-section">
+    <div class="grid-3 mb16" id="camp-cards"></div>
+  </div>
+  <div class="grid-2 mb16">
+    <div class="card"><div class="card-header"><span class="card-label">Evolução CPL — 3 meses</span></div><div id="chart-cpl"></div></div>
+    <div class="card"><div class="card-header"><span class="card-label">Top Keywords</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Keyword</th><th>Cliente</th><th>Cliques</th><th>Conv.</th><th>CPC</th><th>QS</th></tr></thead><tbody id="tb-keywords"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- 06 CONCORRENTES -->
+<div class="section" id="sec-concorrentes">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+    <select class="input" id="sel-cliente-conc" style="width:220px" onchange="renderConcorrentes()">
+      <option value="0">Ferreira &amp; Associados</option><option value="1">Barbosa Advocacia</option>
+      <option value="2">Lima Previdenciário</option><option value="3">Martins Criminal</option>
+    </select>
+  </div>
+  <div class="card mb16"><div class="table-wrap"><table>
+    <thead><tr><th></th><th>Concorrente</th><th>Pos. Maps</th><th>Avaliações</th><th>Nota</th><th>Site</th><th>Instagram</th><th>Ads</th><th>Score</th></tr></thead>
+    <tbody id="tb-conc-body"></tbody>
+  </table></div></div>
+  <div class="grid-3 mb16">
+    <div class="card card-sm"><div class="card-label" style="margin-bottom:10px">O que o Concorrente Faz</div><div id="conc-faz" style="font-size:13px;color:var(--text-sub);line-height:1.8"></div></div>
+    <div class="card card-sm"><div class="card-label" style="margin-bottom:10px">Oportunidades</div><div id="conc-oport" style="font-size:13px;color:var(--green);line-height:1.8"></div></div>
+    <div class="card card-sm"><div class="card-label" style="margin-bottom:10px">Ação Prioritária</div><div id="conc-acao" style="font-size:13px;color:#B7890A;line-height:1.8"></div></div>
+  </div>
+  <div class="subsection-title" style="margin-bottom:10px">Alertas do Mês</div>
+  <div id="conc-alertas"></div>
+</div>
+
+<!-- 07 FINANCEIRO -->
+<div class="section" id="sec-financeiro">
+  <div class="grid-6 mb16" id="fin-kpis"></div>
+  <div class="grid-2 mb16">
+    <div class="card"><div class="card-header"><span class="card-label">Recebimentos — Mai 2025</span></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Atraso</th><th>Ações</th></tr></thead><tbody id="tb-recebimentos"></tbody></table></div></div>
+    <div class="card"><div class="card-header"><span class="card-label">Custos por Categoria</span></div><div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Valor</th><th>% Total</th></tr></thead><tbody id="tb-custos"></tbody></table></div></div>
+  </div>
+  <div class="grid-2 mb16">
+    <div class="card"><div class="card-header"><span class="card-label">Receita vs Custo — 6 meses</span></div><div id="chart-fin"></div></div>
+    <div class="card"><div class="card-header"><span class="card-label">Distribuição por Serviço</span></div><div id="chart-pizza" style="display:flex;align-items:center;gap:24px;flex-wrap:wrap"></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-label">Projeções</span></div><div id="fin-projecoes"></div></div>
+    <div class="card"><div class="card-header"><span class="card-label">Régua de Saúde Financeira</span></div><div id="fin-saude"></div></div>
+  </div>
+</div>
+
+<!-- 08 WHATSAPP -->
+<div class="section" id="sec-whatsapp">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'wa-tab-wa')">WhatsApp</div>
+    <div class="tab" onclick="switchTab(this,'wa-tab-email')">Email</div>
+  </div>
+  <div id="wa-tab-wa">
+    <div class="grid-4 mb16" id="wa-kpis"></div>
+    <div class="grid-2">
+      <div><div class="subsection-title">Fila de Escaladas</div><div id="wa-fila"></div></div>
+      <div><div class="subsection-title">Histórico</div><div class="card"><div class="table-wrap"><table><thead><tr><th>Número</th><th>Assunto (IA)</th><th>Resultado</th><th>Hora</th></tr></thead><tbody id="tb-wa-hist"></tbody></table></div></div></div>
+    </div>
+  </div>
+  <div id="wa-tab-email" style="display:none">
+    <div class="subsection-title">Sequências Ativas</div>
+    <div class="card mb16"><div class="table-wrap"><table><thead><tr><th>Sequência</th><th>Contatos</th><th>Abertura</th><th>Clique</th><th>Conversões</th></tr></thead><tbody id="tb-email-seq"></tbody></table></div></div>
+    <div class="subsection-title">Emails Agendados — Próximas 24h</div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Destinatário</th><th>Assunto</th><th>Sequência</th><th>Horário</th></tr></thead><tbody id="tb-email-sched"></tbody></table></div></div>
+  </div>
+</div>
+
+<!-- 09 AGENTE IA -->
+<div class="section" id="sec-agente">
+  <div class="grid-4 mb16" id="agent-cards"></div>
+  <div class="grid-2 mb16">
+    <div class="card"><div class="card-header"><span class="card-label">Log de Execuções — Últimas 4h</span></div><div class="table-wrap"><table><thead><tr><th>Hora</th><th>Agente</th><th>Ação</th><th>Resultado</th><th>Tempo</th><th>Status</th></tr></thead><tbody id="tb-agent-log"></tbody></table></div></div>
+    <div class="card"><div class="card-header"><span class="card-label">Erros das Últimas 24h</span></div><div id="agent-erros"></div></div>
+  </div>
+  <div class="card"><div class="card-header"><span class="card-label">Consumo de API — Mai 2025</span></div><div class="grid-3" id="agent-consumo"></div></div>
+</div>
+
+<!-- 10 INTELIGÊNCIA -->
+<div class="section" id="sec-inteligencia">
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <span class="report-btn-email" onclick="sendReport('email')">📧 Enviar por Email</span>
+    <span class="report-btn-wa" onclick="sendReport('wa')">🟢 Enviar por WhatsApp</span>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'it-keywords')">Keywords</div>
+    <div class="tab" onclick="switchTab(this,'it-copies')">Copies</div>
+    <div class="tab" onclick="switchTab(this,'it-campanhas')">Campanhas</div>
+    <div class="tab" onclick="switchTab(this,'it-comparativo')">Comparativo</div>
+    <div class="tab" onclick="switchTab(this,'it-dashboard')">Dashboard</div>
+  </div>
+  <div id="it-keywords"><div id="render-keywords"></div></div>
+  <div id="it-copies" style="display:none"><div id="render-copies"></div></div>
+  <div id="it-campanhas" style="display:none"><div id="render-campanhas"></div></div>
+  <div id="it-comparativo" style="display:none"><div id="render-comparativo"></div></div>
+  <div id="it-dashboard" style="display:none"><div id="render-it-dash"></div></div>
+</div>
+
+<!-- 11 PLANILHAS -->
+<div class="section" id="sec-sheets"><div id="render-sheets"></div></div>
+
+<!-- 12 DRAFTS -->
+<div class="section" id="sec-drafts">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div style="font-size:13px;color:var(--text-sub)">Itens restauráveis por <b style="color:var(--text-main)">30 dias</b></div>
+    <span class="btn btn-danger btn-sm" onclick="emptyDrafts()">🗑 Esvaziar tudo</span>
+  </div>
+  <div id="drafts-list"></div>
+</div>
+
+<!-- 13 CONFIG -->
+<div class="section" id="sec-config">
+  <div class="grid-2">
+    <div>
+      <div class="settings-group">
+        <div class="settings-group-title">Metas do Sistema</div>
+        <div style="display:flex;flex-direction:column;gap:10px" id="config-metas"></div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <span class="btn btn-primary btn-sm" onclick="saveMetas()">Salvar Metas</span>
+          <span class="btn btn-ghost btn-sm" onclick="toast('Metas restauradas','info')">Restaurar Padrão</span>
+        </div>
+      </div>
+      <div class="settings-group"><div class="settings-group-title">Status das APIs</div><div id="config-apis"></div></div>
+    </div>
+    <div>
+      <div class="settings-group"><div class="settings-group-title">Alertas Automáticos</div><div id="config-alertas"></div></div>
+      <div class="settings-group"><div class="settings-group-title">Segurança Avançada</div><div id="config-seg"></div></div>
+    </div>
+  </div>
+</div>
+
+    </div><!-- /main-content -->
+  </div><!-- /main-wrapper -->
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-cliente-title">Detalhes do Cliente</div>
+      <span class="modal-close" onclick="closeModal('modal-cliente')">✕</span>
+    </div>
+    <div class="modal-body" id="modal-cliente-body"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-lead">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <div class="modal-title">Novo Lead</div>
+      <span class="modal-close" onclick="closeModal('modal-add-lead')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="input-group"><label class="input-label">Nome</label><input class="input" id="nl-nome" placeholder="Dr. João Silva"></div>
+      <div class="input-group"><label class="input-label">Escritório</label><input class="input" id="nl-escritorio" placeholder="Silva Advocacia"></div>
+      <div class="input-group"><label class="input-label">Área do Direito</label><select class="input" id="nl-area"><option>Trabalhista</option><option>Previdenciário</option><option>Família</option><option>Criminal</option><option>Cível</option><option>Tributário</option><option>Imobiliário</option></select></div>
+      <div class="input-group"><label class="input-label">Canal de Origem</label><select class="input" id="nl-canal"><option>Google Ads</option><option>Meta Ads</option><option>WhatsApp</option><option>Instagram</option><option>Indicação</option></select></div>
+      <div class="input-group"><label class="input-label">Score BANT (0–8)</label><input class="input" id="nl-score" type="number" min="0" max="8" value="4"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <span class="btn btn-primary" onclick="addLead()">Salvar Lead</span>
+        <span class="btn btn-ghost" onclick="closeModal('modal-add-lead')">Cancelar</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+  /* ═══════════════════════════════════════════ SUPABASE — Configuração de Conexão Substitua os valores pelas suas credenciais ═══════════════════════════════════════════ */ const SUPABASE_URL = 'https://mhtwqbskrxvnocuxlrgq.supabase.co'; const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1odHdxYnNrcnh2bm9jdXhscmdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NzAwNTQsImV4cCI6MjA5MzM0NjA1NH0.SX1Q3fMpxx6uwpZjp1e4ViO-m2uJL4pvz6fzkIzauKc'; // Inicializar cliente const { createClient } = supabase; const db = createClient(SUPABASE_URL, SUPABASE_KEY); // Estado global de autenticação let currentUser = null; // Verificar se já está logado ao abrir o CRM db.auth.onAuthStateChange((event, session) => { if (session) { currentUser = session.user; document.getElementById('admin-overlay').classList.remove('open'); document.getElementById('app').style.display = 'flex'; initCRM(); // carrega dados reais } });
+
+  
+
+  /* ═══════════════════════════════════════════ INIT — Carrega todos os dados ao fazer login ═══════════════════════════════════════════ */ async function initCRM() { toast('Carregando dados...', 'info'); await Promise.all([ fetchLeadsDB(), fetchClientesDB(), fetchCampanhasDB(), fetchDraftsDB(), ]); rendered['dashboard'] = true; renderDashboard(); toast('Dados carregados!', 'success'); } /* ═══════════════════════════════════════════ LEADS — READ, CREATE, UPDATE, DELETE ═══════════════════════════════════════════ */ // READ — buscar leads ativos (sem deleted) async function fetchLeadsDB() { const { data, error } = await db .from('leads') .select('*') .is('deleted_at', null) // só ativos .order('created_at', { ascending: false }); if (!error) DATA.leads = data ?? []; } // CREATE — salvar novo lead async function saveLeadDB(lead) { const { data, error } = await db .from('leads') .insert([{ nome: lead.nome, escritorio: lead.escritorio, area: lead.area, canal: lead.canal, score: lead.score, etapa: 'NOVO', proximo: 'Primeiro contato', }]) .select() .single(); if (error) { toast('Erro ao salvar lead: ' + error.message, 'error'); return null; } return data; } // UPDATE — mover etapa do lead async function updateLeadEtapaDB(id, novaEtapa) { const { error } = await db .from('leads') .update({ etapa: novaEtapa }) .eq('id', id); if (error) toast('Erro ao mover lead', 'error'); } // SOFT DELETE — mover para lixeira (não apaga do banco) async function deleteLeadDB(id) { const lead = DATA.leads.find(l => l.id === id); if (!lead) return; // 1. Marcar como deletado na tabela leads await db.from('leads').update({ deleted_at: new Date().toISOString() }).eq('id', id); // 2. Salvar na tabela drafts await db.from('drafts').insert([{ tipo: 'lead', label: lead.nome + ' — ' + lead.escritorio, dados: lead, origem_id: lead.id, expira_em: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(), }]); DATA.leads = DATA.leads.filter(l => l.id !== id); updateDraftBadge(); } /* ═══════════════════════════════════════════ CLIENTES — READ, CREATE, DELETE ═══════════════════════════════════════════ */ async function fetchClientesDB() { const { data, error } = await db .from('clientes') .select('*, campanhas(*), recebimentos(*)') // busca relacionados .is('deleted_at', null) .order('created_at', { ascending: false }); if (!error) DATA.clientes = data ?? []; } async function saveClienteDB(cliente) { const { data, error } = await db .from('clientes') .insert([cliente]) .select().single(); if (error) { toast('Erro ao salvar cliente', 'error'); return null; } return data; } /* ═══════════════════════════════════════════ CAMPANHAS — READ ═══════════════════════════════════════════ */ async function fetchCampanhasDB() { const { data, error } = await db .from('campanhas') .select('*, clientes(nome)') // join com clientes .order('created_at', { ascending: false }); if (!error) DATA.campanhas = data ?? []; } /* ═══════════════════════════════════════════ DRAFTS — READ e RESTORE ═══════════════════════════════════════════ */ async function fetchDraftsDB() { const { data, error } = await db .from('drafts') .select('*') .gt('expira_em', new Date().toISOString()) // só não expirados .order('deleted_at', { ascending: false }); if (!error) { drafts = data ?? []; updateDraftBadge(); } } async function restoreDraftDB(draftId, tipo, origemId) { // Restaurar: remover deleted_at da tabela original await db.from(tipo + 's').update({ deleted_at: null }).eq('id', origemId); // Remover do drafts await db.from('drafts').delete().eq('id', draftId); await Promise.all([fetchLeadsDB(), fetchClientesDB(), fetchDraftsDB()]); rendered[tipo + 's'] = false; toast('Item restaurado com sucesso!', 'success'); }
+
+  /* ==========================================
+   TEMPO REAL - SUPABASE REALTIME
+   ========================================== */
+
+function activateRealtime() {
+
+  // Leads
+  db.channel('leads-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'leads'
+      },
+      async () => {
+        await fetchLeadsDB();
+        buildKanban(DATA.leads);
+        toast('Kanban atualizado', 'info');
+      }
+    )
+    .subscribe();
+
+  // Clientes
+  db.channel('clientes-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'clientes'
+      },
+      async () => {
+        await fetchClientesDB();
+        rendered['clientes'] = false;
+      }
+    )
+    .subscribe();
+
+  // Campanhas
+  db.channel('campanhas-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'campanhas'
+      },
+      async () => {
+        await fetchCampanhasDB();
+        rendered['trafego'] = false;
+      }
+    )
+    .subscribe();
+}
+
+/* ==========================================
+   CHAMAR DENTRO DO INITCRM
+   ========================================== */
+
+// Dentro da sua função initCRM(), adicione:
+
+// activateRealtime();
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let undoStack=[], drafts=[], confirmCallback=null;
+const rendered={};
+
+/* ═══════════════════════════════════════════════
+   UNDO / DRAFTS
+═══════════════════════════════════════════════ */
+function pushUndo(a){undoStack.push(a);if(undoStack.length>20)undoStack.shift();}
+function undoLast(){if(!undoStack.length){toast('Nada para desfazer','info');return;}undoStack.pop()();toast('Ação desfeita','success');}
+function sendToDrafts(item){item.deletedAt=Date.now();item.expiry=Date.now()+30*24*3600*1000;drafts.push(item);updateDraftBadge();}
+function updateDraftBadge(){document.getElementById('draft-count-badge').textContent=drafts.length;}
+function emptyDrafts(){confirmAction('Esvaziar Lixeira','Todos os itens serão excluídos permanentemente.',()=>{drafts=[];updateDraftBadge();renderDrafts();toast('Lixeira esvaziada','success');},'btn-danger');}
+
+/* ═══════════════════════════════════════════════
+   CONFIRM
+═══════════════════════════════════════════════ */
+function confirmAction(title,desc,cb,btnClass='btn-danger'){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-desc').textContent=desc;
+  document.getElementById('confirm-ok-btn').className='btn '+btnClass;
+  confirmCallback=cb;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function confirmResolve(yes){
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if(yes&&confirmCallback)confirmCallback();
+  confirmCallback=null;
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+function toast(msg,type='info',dur=3000){
+  const icons={success:'✓',error:'✕',info:'ℹ'};
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(10px)';t.style.transition='all 0.3s';setTimeout(()=>t.remove(),300);},dur);
+}
+
+/* ═══════════════════════════════════════════════
+   PERSISTENT ALERT
+═══════════════════════════════════════════════ */
+function showPersistentAlert(msg){
+  document.getElementById('pa-text').textContent=msg;
+  document.getElementById('persistent-alert').classList.add('show');
+}
+function dismissAlert(){
+  document.getElementById('persistent-alert').classList.remove('show');
+  toast('Alerta registrado como ciente','success');
+}
+
+/* ═══════════════════════════════════════════════
+   ADMIN LOGIN
+═══════════════════════════════════════════════ */
+
+async function doAdminLogin() { const email = document.getElementById('admin-user').value.trim(); const password = document.getElementById('admin-pass').value; const errEl = document.getElementById('admin-err'); const btn = document.querySelector('#admin-overlay .btn-primary'); // Visual de loading btn.textContent = 'Entrando...'; btn.disabled = true; const { data, error } = await db.auth.signInWithPassword({ email, password }); if (error) { errEl.textContent = 'Email ou senha incorretos. Tente novamente.'; errEl.style.display = 'block'; btn.textContent = 'Entrar no Painel'; btn.disabled = false; document.getElementById('admin-pass').value = ''; setTimeout(() => errEl.style.display = 'none', 4000); return; } // Login OK currentUser = data.user; document.getElementById('admin-overlay').classList.remove('open'); document.getElementById('app').style.display = 'flex'; await initCRM(); toast('Bem-vindo ao LexFlow!', 'success'); } // Logout (adicione no sidebar footer ou config) async function doLogout() { await db.auth.signOut(); location.reload(); }
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('admin-overlay').classList.contains('open'))doAdminLogin();});
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════ */
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
+function toggleSection(id){
+  const el=document.getElementById(id);
+  const tgl=el.previousElementSibling?.querySelector('.subsection-toggle');
+  const hidden=el.classList.contains('hidden');
+  if(hidden){el.style.maxHeight=el.scrollHeight+'px';el.classList.remove('hidden');if(tgl)tgl.textContent='▲';}
+  else{el.style.maxHeight=el.scrollHeight+'px';requestAnimationFrame(()=>{el.style.maxHeight='0';el.classList.add('hidden');});if(tgl)tgl.textContent='▼';}
+}
+document.querySelectorAll('.collapsible-content').forEach(el=>el.style.maxHeight=el.scrollHeight+'px');
+
+/* ═══════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════ */
+const pageNames={dashboard:'Dashboard Geral',leads:'Leads e Pipeline',clientes:'Clientes Ativos',vendas:'Vendas e Propostas',trafego:'Tráfego Pago',concorrentes:'Análise de Concorrentes',financeiro:'Financeiro',whatsapp:'WhatsApp e Email',agente:'Agente IA — Status',inteligencia:'Inteligência de Tráfego',sheets:'Planilhas + Integrações',drafts:'Lixeira (Drafts)',config:'Configurações'};
+function nav(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')?.includes("'"+id+"'"))n.classList.add('active');});
+  document.getElementById('topbar-title').textContent=pageNames[id]||id;
+  if(!rendered[id]){rendered[id]=true;({dashboard:renderDashboard,leads:renderLeads,clientes:renderClientes,vendas:renderVendas,trafego:renderTrafego,concorrentes:renderConcorrentes,financeiro:renderFinanceiro,whatsapp:renderWhatsapp,agente:renderAgente,inteligencia:renderInteligencia,sheets:renderSheets,drafts:renderDrafts,config:renderConfig})[id]?.();}
+}
+function switchTab(el,tabId){
+  const allTabs=el.parentElement.querySelectorAll('.tab');
+  allTabs.forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  const prefix=tabId.split('-').slice(0,2).join('-')+'-';
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(t=>{if(!t.classList.contains('tabs')&&t.getAttribute('id')!==el.parentElement.id)t.style.display='none';});
+  document.getElementById(tabId).style.display='';
+  const itRenders={'it-keywords':renderITKeywords,'it-copies':renderITCopies,'it-campanhas':renderITCampanhas,'it-comparativo':renderITComparativo,'it-dashboard':renderITDashboard};
+  if(itRenders[tabId])itRenders[tabId]();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
+
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+const DATA={
+  clientes:[
+    {id:1,nome:'Ferreira & Associados',area:'Trabalhista',meses:14,ticket:5200,ltv:72800,nps:87,cs:'green',checkin:'12/05',servicos:['Tráfego Pago','SEO Local','Agente IA','GBP'],campanhas:{plataforma:'Google Ads',leads:42,cpl:38,ctr:4.2,gasto:1596,orcamento:2000},marcos:[{data:'Mar/24',ev:'Onboarding concluído'},{data:'Jun/24',ev:'Upsell: Agente IA'},{data:'Out/24',ev:'Renovação anual'},{data:'Mai/25',ev:'Meta CPL atingida'}]},
+    {id:2,nome:'Barbosa Advocacia',area:'Família',meses:9,ticket:3800,ltv:34200,nps:91,cs:'green',checkin:'08/05',servicos:['Tráfego Pago','GBP','Email Mkt'],campanhas:{plataforma:'Meta Ads',leads:28,cpl:54,ctr:2.8,gasto:1512,orcamento:1800},marcos:[{data:'Ago/24',ev:'Onboarding'},{data:'Nov/24',ev:'Upsell: Email'},{data:'Fev/25',ev:'Renovação'}]},
+    {id:3,nome:'Lima Previdenciário',area:'Previdenciário',meses:22,ticket:6500,ltv:143000,nps:78,cs:'amber',checkin:'20/05',servicos:['Tráfego Pago','SEO Local','GBP','Agente IA'],campanhas:{plataforma:'Google Ads',leads:61,cpl:29,ctr:5.1,gasto:1769,orcamento:2500},marcos:[{data:'Jul/23',ev:'Onboarding'},{data:'Dez/23',ev:'Upsell: IA'},{data:'Mar/24',ev:'Renovação'}]},
+    {id:4,nome:'Martins Criminal',area:'Criminal',meses:6,ticket:4200,ltv:25200,nps:82,cs:'green',checkin:'15/05',servicos:['Tráfego Pago','GBP'],campanhas:{plataforma:'Google Ads',leads:19,cpl:63,ctr:3.4,gasto:1197,orcamento:1500},marcos:[{data:'Nov/24',ev:'Onboarding'},{data:'Fev/25',ev:'Alerta CPL'}]},
+    {id:5,nome:'Oliveira & Pinto Cível',area:'Cível',meses:11,ticket:3400,ltv:37400,nps:70,cs:'amber',checkin:'25/05',servicos:['Tráfego Pago','Email Mkt'],campanhas:{plataforma:'Meta Ads',leads:23,cpl:48,ctr:3.1,gasto:1104,orcamento:1500},marcos:[{data:'Jun/24',ev:'Onboarding'},{data:'Out/24',ev:'Reativação'}]},
+    {id:6,nome:'Santos Tributário',area:'Tributário',meses:18,ticket:7800,ltv:140400,nps:94,cs:'green',checkin:'07/05',servicos:['Tráfego Pago','SEO Local','GBP','Agente IA','Email Mkt'],campanhas:{plataforma:'Google Ads',leads:78,cpl:24,ctr:6.2,gasto:1872,orcamento:2500},marcos:[{data:'Nov/23',ev:'Onboarding'},{data:'Jan/24',ev:'Upsell: IA + Email'},{data:'Mai/24',ev:'Renovação'}]},
+    {id:7,nome:'Rocha Imobiliário',area:'Imobiliário',meses:4,ticket:2900,ltv:11600,nps:68,cs:'red',checkin:'30/05',servicos:['Tráfego Pago'],campanhas:{plataforma:'Meta Ads',leads:14,cpl:71,ctr:2.1,gasto:994,orcamento:1200},marcos:[{data:'Jan/25',ev:'Onboarding'},{data:'Mar/25',ev:'Alerta CPL'}]},
+    {id:8,nome:'Carvalho Trabalhista',area:'Trabalhista',meses:8,ticket:4100,ltv:32800,nps:85,cs:'green',checkin:'11/05',servicos:['Tráfego Pago','GBP','Agente IA'],campanhas:{plataforma:'Google Ads',leads:35,cpl:41,ctr:4.7,gasto:1435,orcamento:2000},marcos:[{data:'Set/24',ev:'Onboarding'},{data:'Dez/24',ev:'Upsell: IA'}]},
+  ],
+  leads:[
+    {id:1,nome:'Dr. Paulo Henrique',escritorio:'Guimarães Advocacia',area:'Previdenciário',score:7,canal:'Google Ads',entrada:'01/05',proximo:'Enviar proposta',etapa:'PROPOSTA'},
+    {id:2,nome:'Dra. Camila Soares',escritorio:'Soares & Mendes',area:'Trabalhista',score:8,canal:'Indicação',entrada:'28/04',proximo:'Assinar contrato',etapa:'FECHADO'},
+    {id:3,nome:'Dr. Renato Pires',escritorio:'Pires Criminal',area:'Criminal',score:5,canal:'WhatsApp',entrada:'03/05',proximo:'Qualificar BANT',etapa:'CONTATADO'},
+    {id:4,nome:'Dra. Juliana Costa',escritorio:'Costa Família',area:'Família',score:6,canal:'Meta Ads',entrada:'30/04',proximo:'Enviar material',etapa:'QUALIFICADO'},
+    {id:5,nome:'Dr. Marcos Vidal',escritorio:'Vidal Cível',area:'Cível',score:4,canal:'Google Ads',entrada:'02/05',proximo:'Primeiro contato',etapa:'NOVO'},
+    {id:6,nome:'Dra. Aline Moura',escritorio:'Moura Tributário',area:'Tributário',score:8,canal:'Indicação',entrada:'25/04',proximo:'Aguardando assinatura',etapa:'FECHADO'},
+    {id:7,nome:'Dr. Roberto Alves',escritorio:'Alves Imobiliário',area:'Imobiliário',score:3,canal:'Instagram',entrada:'05/05',proximo:'Follow-up',etapa:'NOVO'},
+    {id:8,nome:'Dra. Patricia Lima',escritorio:'Lima & Associados',area:'Trabalhista',score:7,canal:'Google Ads',entrada:'29/04',proximo:'Reunião agendada',etapa:'REUNIÃO'},
+    {id:9,nome:'Dr. Fernando Nunes',escritorio:'Nunes Advocacia',area:'Previdenciário',score:6,canal:'Meta Ads',entrada:'01/05',proximo:'Qualificar orçamento',etapa:'CONTATADO'},
+    {id:10,nome:'Dra. Sandra Rocha',escritorio:'Rocha & Filhos',area:'Criminal',score:5,canal:'WhatsApp',entrada:'04/05',proximo:'Marcar reunião',etapa:'QUALIFICADO'},
+    {id:11,nome:'Dr. Gustavo Melo',escritorio:'Melo Advocacia',area:'Família',score:7,canal:'Google Ads',entrada:'27/04',proximo:'Follow-up proposta',etapa:'PROPOSTA'},
+    {id:12,nome:'Dra. Helena Castro',escritorio:'Castro Tributário',area:'Tributário',score:4,canal:'Instagram',entrada:'06/05',proximo:'Primeiro contato',etapa:'NOVO'},
+    {id:13,nome:'Dr. Luiz Carmo',escritorio:'Carmo Cível',area:'Cível',score:6,canal:'Indicação',entrada:'02/05',proximo:'Reunião online',etapa:'REUNIÃO'},
+    {id:14,nome:'Dra. Vera Campos',escritorio:'Campos Trabalhista',area:'Trabalhista',score:5,canal:'Meta Ads',entrada:'05/05',proximo:'Enviar cases',etapa:'CONTATADO'},
+    {id:15,nome:'Dr. André Teixeira',escritorio:'Teixeira & Brandão',area:'Previdenciário',score:7,canal:'Google Ads',entrada:'03/05',proximo:'Negociar valor',etapa:'PROPOSTA'},
+  ],
+  agente_log:[
+    {hora:'14:52',agente:'WhatsApp',acao:'Respondeu lead Pires Criminal',resultado:'Lead qualificado',dur:1.2,status:'ok'},
+    {hora:'14:38',agente:'Calendário',acao:'Agendou reunião Vera Campos',resultado:'15/05 às 14h',dur:0.8,status:'ok'},
+    {hora:'14:21',agente:'Tráfego',acao:'Analisou campanha Lima Prev.',resultado:'Alerta CPL emitido',dur:3.4,status:'ok'},
+    {hora:'14:08',agente:'WhatsApp',acao:'Escalou conversa para humano',resultado:'Proposta alta',dur:0.4,status:'ok'},
+    {hora:'13:55',agente:'Financeiro',acao:'Verificou pagamentos vencidos',resultado:'1 cobrança atrasada',dur:1.1,status:'ok'},
+    {hora:'13:41',agente:'WhatsApp',acao:'Tentou enviar mensagem Z-API',resultado:'Timeout na requisição',dur:15.0,status:'err'},
+    {hora:'13:29',agente:'Tráfego',acao:'Gerou relatório semanal',resultado:'PDF criado',dur:4.7,status:'ok'},
+    {hora:'13:15',agente:'Calendário',acao:'Lembrete check-in Martins',resultado:'Email enviado',dur:0.6,status:'ok'},
+  ],
+  campanhas:[
+    {cliente:'Ferreira & Assoc.',plataforma:'Google Ads',status:'ativo',leads:42,cpl:38,meta_cpl:45,ctr:4.2,gasto:1596,orcamento:2000},
+    {cliente:'Lima Previdenciário',plataforma:'Google Ads',status:'ativo',leads:61,cpl:29,meta_cpl:35,ctr:5.1,gasto:1769,orcamento:2500},
+    {cliente:'Santos Tributário',plataforma:'Google Ads',status:'otimizando',leads:78,cpl:24,meta_cpl:30,ctr:6.2,gasto:1872,orcamento:2500},
+    {cliente:'Barbosa Advocacia',plataforma:'Meta Ads',status:'alerta',leads:28,cpl:54,meta_cpl:40,ctr:2.8,gasto:1512,orcamento:1800},
+    {cliente:'Rocha Imobiliário',plataforma:'Meta Ads',status:'alerta',leads:14,cpl:71,meta_cpl:50,ctr:2.1,gasto:994,orcamento:1200},
+  ],
+  concorrentes:[
+    {cliente:'Ferreira & Associados',proprio:{maps:2,aval:187,nota:4.8,site:'Rápido',insta:'Ativo',ads:true,score:82},concs:[{nome:'Trab. & Cia Advogados',maps:1,aval:312,nota:4.9,site:'Rápido',insta:'Ativo',ads:true,score:88},{nome:'Garcia Trabalhista',maps:4,aval:98,nota:4.6,site:'Médio',insta:'Irregular',ads:false,score:59},{nome:'Pontes & Souza',maps:3,aval:145,nota:4.7,site:'Lento',insta:'Inativo',ads:true,score:65}],faz:'• Anuncia há 18+ meses no Google<br>• 300+ avaliações Maps<br>• Cases semanais no Instagram',oport:'• Keyword: "advogado trabalhista urgente"<br>• Campanhas de rescisão (sazonalidade)<br>• +125 avaliações para superar',acao:'Sprint de avaliações: meta +25/mês por 5 meses'},
+    {cliente:'Barbosa Advocacia',proprio:{maps:3,aval:76,nota:4.7,site:'Rápido',insta:'Ativo',ads:true,score:71},concs:[{nome:'Familiares Unidos Adv.',maps:1,aval:201,nota:4.9,site:'Rápido',insta:'Ativo',ads:true,score:91},{nome:'Direito da Família SP',maps:2,aval:134,nota:4.8,site:'Médio',insta:'Ativo',ads:false,score:74},{nome:'Herança & Custódia',maps:5,aval:43,nota:4.5,site:'Lento',insta:'Inativo',ads:true,score:48}],faz:'• Posição 1 no Maps há 6+ meses<br>• Dobro de avaliações<br>• Instagram com 2k+ seguidores',oport:'• Google Display remarketing<br>• Série de Reels sobre guarda<br>• Meta: posição 1 Maps (+125 avaliações)',acao:'3 posts/semana IG com foco em guarda de filhos'},
+    {cliente:'Lima Previdenciário',proprio:{maps:1,aval:243,nota:4.9,site:'Rápido',insta:'Ativo',ads:true,score:91},concs:[{nome:'INSS Fácil Advocacia',maps:2,aval:189,nota:4.8,site:'Rápido',insta:'Ativo',ads:true,score:84},{nome:'Benefício Certo Adv.',maps:3,aval:121,nota:4.7,site:'Médio',insta:'Irregular',ads:false,score:62},{nome:'Previdência & Direito',maps:4,aval:87,nota:4.6,site:'Lento',insta:'Inativo',ads:true,score:53}],faz:'• Segundo lugar com CPL agressivo<br>• Começou anunciar 60 dias atrás',oport:'• Manter liderança Maps<br>• Conteúdo: "fui negado pelo INSS"<br>• Landing page aposentadoria especial',acao:'Defensiva: publicações frequentes + consolidar #1'},
+    {cliente:'Martins Criminal',proprio:{maps:2,aval:55,nota:4.8,site:'Médio',insta:'Irregular',ads:true,score:67},concs:[{nome:'Defesa Penal SP',maps:1,aval:178,nota:4.9,site:'Rápido',insta:'Ativo',ads:true,score:90},{nome:'Criminal Experts',maps:3,aval:92,nota:4.7,site:'Rápido',insta:'Ativo',ads:false,score:69},{nome:'Advocacia Penal BR',maps:4,aval:41,nota:4.5,site:'Lento',insta:'Inativo',ads:true,score:44}],faz:'• Posição 1 com 178 avaliações<br>• Site ultra-rápido<br>• Instagram ativo com cases',oport:'• Urgente: ativar Instagram<br>• +123 avaliações Google<br>• Acelerar carregamento do site',acao:'Sprint 30 dias: 50 avaliações + 12 posts Instagram'},
+  ],
+  financeiro:{
+    recebimentos:[
+      {cliente:'Ferreira & Assoc.',valor:5200,venc:'05/05',status:'pago',atraso:0},
+      {cliente:'Barbosa Advocacia',valor:3800,venc:'05/05',status:'pago',atraso:0},
+      {cliente:'Lima Previdenciário',valor:6500,venc:'07/05',status:'pago',atraso:0},
+      {cliente:'Martins Criminal',valor:4200,venc:'10/05',status:'pago',atraso:0},
+      {cliente:'Oliveira & Pinto',valor:3400,venc:'10/05',status:'pendente',atraso:3},
+      {cliente:'Santos Tributário',valor:7800,venc:'05/05',status:'pago',atraso:0},
+      {cliente:'Rocha Imobiliário',valor:2900,venc:'08/05',status:'pendente',atraso:5},
+      {cliente:'Carvalho Trabalhista',valor:4100,venc:'10/05',status:'pendente',atraso:0},
+    ],
+    custos:[
+      {cat:'Tráfego Próprio',val:2800,pct:26},{cat:'Ferramentas SaaS',val:1420,pct:13},
+      {cat:'Terceiros',val:2100,pct:19},{cat:'APIs e Infra',val:980,pct:9},
+      {cat:'Marketing Próprio',val:640,pct:6},{cat:'Outros',val:360,pct:3},
+    ],
+    hist_rec:[28400,31200,33800,35100,36900,38400],
+    hist_cust:[9200,10100,10800,11200,11800,12300],
+  },
+  mrr_hist:[34.1,35.8,36.9,37.2,38.0,38.4],
+  mrr_meses:['Dez','Jan','Fev','Mar','Abr','Mai'],
+  leads_canal:{WhatsApp:31,Instagram:24,Google:52,Meta:28,Indicação:12},
+};
+
+/* ═══════════════════════════════════════════════
+   SVG CHARTS — SMOOTH CURVES, LIGHT STYLE
+═══════════════════════════════════════════════ */
+function svgLine(W,H,datasets,labels){
+  const PAD={t:20,r:20,b:32,l:50};
+  const w=W-PAD.l-PAD.r,h=H-PAD.t-PAD.b;
+  const allVals=datasets.flatMap(d=>d.vals);
+  const minV=Math.min(...allVals)*0.92,maxV=Math.max(...allVals)*1.06;
+  const scX=i=>PAD.l+(i/(labels.length-1))*w;
+  const scY=v=>PAD.t+h-((v-minV)/(maxV-minV))*h;
+  // Smooth bezier path
+  function smoothPath(pts){
+    let d=`M${pts[0][0]},${pts[0][1]}`;
+    for(let i=1;i<pts.length;i++){
+      const cp1x=(pts[i-1][0]+pts[i][0])/2,cp1y=pts[i-1][1];
+      const cp2x=cp1x,cp2y=pts[i][1];
+      d+=` C${cp1x},${cp1y} ${cp2x},${cp2y} ${pts[i][0]},${pts[i][1]}`;
+    }
+    return d;
+  }
+  let svg=`<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">`;
+  // Grid lines
+  [0,0.25,0.5,0.75,1].forEach(f=>{
+    const v=minV+(maxV-minV)*f,y=scY(v);
+    svg+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#F3F4F6" stroke-width="1"/>`;
+    svg+=`<text x="${PAD.l-6}" y="${y+4}" font-family="Inter,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">${v>=1000?'R$'+(v/1000).toFixed(0)+'k':v.toFixed(0)}</text>`;
+  });
+  labels.forEach((l,i)=>svg+=`<text x="${scX(i)}" y="${H-4}" font-family="Inter,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">${l}</text>`);
+  datasets.forEach(ds=>{
+    const pts=ds.vals.map((v,i)=>[scX(i),scY(v)]);
+    const path=smoothPath(pts);
+    if(!ds.dash&&ds.fill){
+      const fillPts=`${path} L${scX(ds.vals.length-1)},${PAD.t+h} L${PAD.l},${PAD.t+h} Z`;
+      svg+=`<path d="${fillPts}" fill="${ds.color}" opacity="0.08"/>`;
+    }
+    svg+=`<path d="${path}" fill="none" stroke="${ds.color}" stroke-width="${ds.width||2}" ${ds.dash?`stroke-dasharray="${ds.dash}"`:'stroke-linecap="round" stroke-linejoin="round"'} opacity="${ds.opacity||1}"/>`;
+    if(!ds.dash)pts.forEach(([x,y])=>svg+=`<circle cx="${x}" cy="${y}" r="3.5" fill="#fff" stroke="${ds.color}" stroke-width="2"/>`);
+  });
+  return svg+'</svg>';
+}
+
+function svgBars(W,H,labels,vals,colors){
+  const PAD={t:20,r:20,b:32,l:44};
+  const w=W-PAD.l-PAD.r,h=H-PAD.t-PAD.b;
+  const maxV=Math.max(...vals)*1.15;
+  const bw=Math.max(10,(w/vals.length)*0.55);
+  const gap=(w-(bw*vals.length))/(vals.length+1);
+  let svg=`<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">`;
+  [0,0.5,1].forEach(f=>{
+    const y=PAD.t+h-f*h;
+    svg+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#F3F4F6" stroke-width="1"/>`;
+    if(f>0)svg+=`<text x="${PAD.l-4}" y="${y+3}" font-family="Inter,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">${(maxV*f>=1000)?(maxV*f/1000).toFixed(0)+'k':(maxV*f).toFixed(0)}</text>`;
+  });
+  vals.forEach((v,i)=>{
+    const bh=(v/maxV)*h,x=PAD.l+gap+(bw+gap)*i,y=PAD.t+h-bh;
+    const c=Array.isArray(colors)?colors[i%colors.length]:colors;
+    svg+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="5" fill="${c}" opacity="0.85"/>`;
+    svg+=`<text x="${x+bw/2}" y="${H-4}" font-family="Inter,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">${labels[i]}</text>`;
+    svg+=`<text x="${x+bw/2}" y="${y-5}" font-family="Inter,sans-serif" font-size="10" fill="${c}" text-anchor="middle" font-weight="700">${v>=1000?(v/1000).toFixed(1)+'k':v}</text>`;
+  });
+  return svg+'</svg>';
+}
+
+function svgDonut(data,W){
+  const R=55,r=30,cx=W/2,cy=75;
+  let svg=`<svg width="${W}" height="150" xmlns="http://www.w3.org/2000/svg">`;
+  const total=data.reduce((a,d)=>a+d.val,0);
+  let startAngle=-Math.PI/2;
+  data.forEach(d=>{
+    const angle=(d.val/total)*2*Math.PI,end=startAngle+angle;
+    const lx=cx+R*Math.cos(startAngle),ly=cy+R*Math.sin(startAngle);
+    const lx2=cx+R*Math.cos(end),ly2=cy+R*Math.sin(end);
+    const sx=cx+r*Math.cos(startAngle),sy=cy+r*Math.sin(startAngle);
+    const sx2=cx+r*Math.cos(end),sy2=cy+r*Math.sin(end);
+    svg+=`<path d="M${lx},${ly} A${R},${R} 0 ${angle>Math.PI?1:0},1 ${lx2},${ly2} L${sx2},${sy2} A${r},${r} 0 ${angle>Math.PI?1:0},0 ${sx},${sy} Z" fill="${d.color}" opacity="0.9"/>`;
+    startAngle=end;
+  });
+  const total2=(total/1000).toFixed(0);
+  svg+=`<text x="${cx}" y="${cy-4}" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#2B2F33">R$${total2}k</text>`;
+  svg+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#9CA3AF">Receita Total</text>`;
+  return svg+'</svg>';
+}
+
+function getW(id){const el=document.getElementById(id);return el?el.offsetWidth||480:480;}
+
+/* ═══════════════════════════════════════════════
+   01 DASHBOARD
+═══════════════════════════════════════════════ */
+function renderDashboard(){
+  const kpis=[
+    {icon:'💰',label:'MRR Atual',val:'R$38.4k',delta:'▲ +12.3%',up:true,meta:'vs abril',cls:'ki-purple kpi-purple'},
+    {icon:'🎯',label:'Leads / Mês',val:'147',delta:'▲ +8.1%',up:true,meta:'vs abril',cls:'ki-blue kpi-blue'},
+    {icon:'👥',label:'Clientes Ativos',val:'8',delta:'▼ -1 churn',up:false,meta:'mai/2025',cls:'ki-green kpi-green'},
+    {icon:'📊',label:'CPL Médio',val:'R$42',delta:'▼ -4.5%',up:true,meta:'vs abril',cls:'ki-yellow kpi-yellow'},
+    {icon:'❤️',label:'Health Score',val:'74',delta:'▲ +3pts',up:true,meta:'vs abril',cls:'ki-pink kpi-pink'},
+    {icon:'💳',label:'Receita Hoje',val:'R$1.28k',delta:'3 pagamentos',up:true,meta:'recebidos',cls:'ki-orange kpi-orange'},
+  ];
+  document.getElementById('dash-kpis').innerHTML=kpis.map(k=>`
+    <div class="card card-sm kpi-card ${k.cls.split(' ')[1]}">
+      <div class="kpi-icon ${k.cls.split(' ')[0]}">${k.icon}</div>
+      <div class="card-label">${k.label}</div>
+      <div class="card-value" style="font-size:26px;margin-top:4px">${k.val}</div>
+      <div><span class="card-delta ${k.up?'delta-up':'delta-down'}">${k.delta}</span></div>
+      <div class="card-meta">${k.meta}</div>
+    </div>`).join('');
+
+  setTimeout(()=>{
+    const mEl=document.getElementById('chart-mrr');
+    if(mEl&&mEl.offsetWidth>0)mEl.innerHTML=svgLine(mEl.offsetWidth,190,[
+      {vals:DATA.mrr_hist.map(v=>v*1.07),color:'#27AE60',width:1.5,opacity:0.7},
+      {vals:DATA.mrr_hist,color:'#6C5CE7',width:2.5,fill:true},
+      {vals:DATA.mrr_hist.map(v=>v*0.92),color:'#2D9CDB',width:1.5,opacity:0.7},
+    ],DATA.mrr_meses);
+    const lEl=document.getElementById('chart-leads-canal');
+    if(lEl&&lEl.offsetWidth>0)lEl.innerHTML=svgBars(lEl.offsetWidth,175,Object.keys(DATA.leads_canal),Object.values(DATA.leads_canal),['#2D9CDB','#6C5CE7','#F2C94C','#27AE60','#FF7675']);
+  },80);
+
+  document.getElementById('tb-agente-dash').innerHTML=DATA.agente_log.slice(0,5).map(r=>`
+    <tr>
+      <td style="color:var(--text-muted)">${r.hora}</td>
+      <td><span class="tag tag-purple">${r.agente}</span></td>
+      <td class="td-main" style="font-size:12px">${r.acao}</td>
+      <td>${r.status==='ok'?'<span class="tag tag-green">OK</span>':'<span class="tag tag-pink">ERRO</span>'}</td>
+    </tr>`).join('');
+
+  document.getElementById('semaforo-wrap').innerHTML=[
+    {label:'Prospecção',nota:78,c:'green'},{label:'Entrega',nota:85,c:'green'},
+    {label:'Customer Success',nota:62,c:'yellow'},{label:'Financeiro',nota:90,c:'green'},
+    {label:'Operacional',nota:44,c:'red'},
+  ].map(a=>{
+    const pct=a.nota;
+    const barColor=a.c==='green'?'#27AE60':a.c==='yellow'?'#F2C94C':'#FF7675';
+    return `<div class="traffic-light">
+      <div class="dot dot-${a.c}"></div>
+      <div class="tl-label">${a.label}</div>
+      <div class="tl-bar"><div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div></div>
+      <div class="tl-score tl-${a.c}">${a.nota}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   02 LEADS
+═══════════════════════════════════════════════ */
+function renderLeads(){buildKanban(DATA.leads);buildFunnel();}
+function filterLeads(){buildKanban(DATA.leads);}
+
+function buildKanban(leads){
+  const etapas=['NOVO','CONTATADO','QUALIFICADO','REUNIÃO','PROPOSTA','FECHADO'];
+  const eCols={'NOVO':'#9CA3AF','CONTATADO':'#2D9CDB','QUALIFICADO':'#F2C94C','REUNIÃO':'#6C5CE7','PROPOSTA':'#27AE60','FECHADO':'#27AE60'};
+  const cCls={'Google Ads':'tag-blue','Meta Ads':'tag-purple','WhatsApp':'tag-green','Instagram':'tag-yellow','Indicação':'tag-gray'};
+  document.getElementById('kanban-board').innerHTML=etapas.map(etapa=>{
+    const cols=leads.filter(l=>l.etapa===etapa);
+    return `<div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="kanban-col-title" style="color:${eCols[etapa]}">${etapa}</span>
+        <span class="kanban-col-count">${cols.length}</span>
+      </div>
+      <div class="kanban-cards">
+        ${cols.map(l=>`<div class="kanban-card">
+          <div class="kc-name">${l.nome}</div>
+          <div class="kc-office">${l.escritorio}</div>
+          <div><span class="tag tag-gray" style="font-size:10px">${l.area}</span> <span class="tag ${cCls[l.canal]||'tag-gray'}" style="font-size:10px">${l.canal}</span></div>
+          <div class="kc-score-bar">
+            <div class="kc-score-label"><span>BANT</span><b>${l.score}/8</b></div>
+            <div class="progress-wrap"><div class="progress-fill pf-purple" style="width:${l.score/8*100}%"></div></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">↪ ${l.proximo}</div>
+          <div class="kc-actions-row">
+            <span class="btn btn-ghost btn-xs" onclick="moveLead(${l.id})">→ Avançar</span>
+            <span class="btn btn-danger btn-xs" onclick="deleteLead(${l.id})">✕</span>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function moveLead(id){
+  const etapas=['NOVO','CONTATADO','QUALIFICADO','REUNIÃO','PROPOSTA','FECHADO'];
+  const lead=DATA.leads.find(l=>l.id===id);if(!lead)return;
+  const idx=etapas.indexOf(lead.etapa);
+  if(idx>=etapas.length-1){toast('Lead já está na etapa final','info');return;}
+  const prev=lead.etapa;lead.etapa=etapas[idx+1];
+  pushUndo(()=>{lead.etapa=prev;buildKanban(DATA.leads);});
+  buildKanban(DATA.leads);toast(`Lead movido para ${lead.etapa}`,'success');
+}
+function deleteLead(id){
+  confirmAction('Deletar Lead','O lead será movido para a Lixeira por 30 dias.',()=>{
+    const idx=DATA.leads.findIndex(l=>l.id===id);if(idx===-1)return;
+    const [lead]=DATA.leads.splice(idx,1);
+    sendToDrafts({type:'lead',data:lead,label:lead.nome+' — '+lead.escritorio});
+    pushUndo(()=>{DATA.leads.splice(idx,0,lead);buildKanban(DATA.leads);});
+    buildKanban(DATA.leads);toast('Lead movido para Lixeira','info');
+  });
+}
+async function addLead() { const nome = document.getElementById('nl-nome').value.trim(); const esc = document.getElementById('nl-escritorio').value.trim(); if (!nome || !esc) { toast('Preencha nome e escritório', 'error'); return; } const novoLead = { nome, escritorio: esc, area: document.getElementById('nl-area').value, canal: document.getElementById('nl-canal').value, score: parseInt(document.getElementById('nl-score').value) || 4, }; // Salvar no banco const saved = await saveLeadDB(novoLead); if (!saved) return; // erro já mostrado pelo saveLeadDB DATA.leads.unshift(saved); buildKanban(DATA.leads); closeModal('modal-add-lead'); toast('Lead salvo no banco de dados!', 'success'); }
+}
+function buildFunnel(){
+  const conv=[100,72,58,41,28,18],dias=[0,2.1,4.8,8.3,12.7,6.2];
+  const etapas=['NOVO','CONTATADO','QUALIFICADO','REUNIÃO','PROPOSTA','FECHADO'];
+  document.getElementById('funnel-metrics').innerHTML=etapas.map((l,i)=>`<div class="funnel-step"><div class="funnel-pct">${conv[i]}%</div><div class="funnel-label">${l}</div><div class="funnel-days">${dias[i]>0?dias[i].toFixed(1)+'d avg':''}</div></div>`).join('');
+}
+
+
+/* ═══════════════════════════════════════════════
+   03 CLIENTES
+═══════════════════════════════════════════════ */
+function renderClientes(){
+  const tMap={'Tráfego Pago':'tag-blue','SEO Local':'tag-green','Agente IA':'tag-purple','GBP':'tag-gray','Email Mkt':'tag-yellow'};
+  document.getElementById('tb-clientes').innerHTML=DATA.clientes.map(c=>`<tr>
+    <td class="td-main">${c.nome}</td>
+    <td><span class="tag tag-gray">${c.area}</span></td>
+    <td>${c.servicos.map(s=>`<span class="tag ${tMap[s]||'tag-gray'}" style="margin:1px;font-size:10px">${s}</span>`).join('')}</td>
+    <td class="td-main">R$${c.ticket.toLocaleString('pt-BR')}</td>
+    <td>${c.meses}m</td>
+    <td>R$${(c.ltv/1000).toFixed(1)}k</td>
+    <td><span class="${c.nps>=85?'nps-good':c.nps>=70?'nps-ok':'nps-bad'}">${c.nps}</span></td>
+    <td><span class="dot dot-${c.cs==='green'?'green':c.cs==='amber'?'yellow':'red'}"></span></td>
+    <td style="color:var(--text-muted);font-size:12px">${c.checkin}</td>
+    <td><div style="display:flex;gap:4px">
+      <span class="btn btn-ghost btn-xs" onclick="openClienteModal(${c.id})">Ver</span>
+      <span class="btn btn-danger btn-xs" onclick="deleteCliente(${c.id})">✕</span>
+    </div></td>
+  </tr>`).join('');
+}
+function deleteCliente(id){
+  confirmAction('Remover Cliente','O cliente será movido para a Lixeira por 30 dias.',()=>{
+    const idx=DATA.clientes.findIndex(c=>c.id===id);if(idx===-1)return;
+    const [c]=DATA.clientes.splice(idx,1);
+    sendToDrafts({type:'cliente',data:c,label:c.nome+' — '+c.area});
+    renderClientes();toast('Cliente movido para Lixeira','info');
+  });
+}
+function openClienteModal(id){
+  const c=DATA.clientes.find(x=>x.id===id);if(!c)return;
+  document.getElementById('modal-cliente-title').textContent=c.nome;
+  const tMap={'Tráfego Pago':'tag-blue','SEO Local':'tag-green','Agente IA':'tag-purple','GBP':'tag-gray','Email Mkt':'tag-yellow'};
+  document.getElementById('modal-cliente-body').innerHTML=`
+    <div class="grid-3 mb16">
+      ${[{l:'Ticket Mensal',v:'R$'+c.ticket.toLocaleString('pt-BR'),c:'var(--purple)'},{l:'Contrato',v:c.meses+'m',c:'var(--text-main)'},{l:'NPS',v:c.nps,c:c.nps>=85?'var(--green)':c.nps>=70?'#B7890A':'var(--pink)'}].map(k=>`
+        <div style="text-align:center;padding:14px;background:#F9FAFB;border:1px solid var(--card-border);border-radius:10px">
+          <div style="font-size:22px;font-weight:800;color:${k.c}">${k.v}</div>
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-top:4px">${k.l}</div>
+        </div>`).join('')}
+    </div>
+    <div class="subsection-title" style="margin-bottom:8px">Serviços</div>
+    <div style="margin-bottom:16px">${c.servicos.map(s=>`<span class="tag ${tMap[s]||'tag-gray'}" style="margin:2px">${s}</span>`).join('')}</div>
+    <div class="subsection-title" style="margin-bottom:8px">Timeline</div>
+    <div class="timeline mb16">${c.marcos.map(m=>`<div class="timeline-item"><div class="timeline-date">${m.data}</div><div class="timeline-text">${m.ev}</div></div>`).join('')}</div>
+    <div class="subsection-title" style="margin-bottom:8px">Campanha Ativa</div>
+    <div class="camp-metrics">
+      <div class="camp-metric"><div class="cm-label">Plataforma</div><div style="font-size:13px;font-weight:700;color:var(--text-main);margin-top:2px">${c.campanhas.plataforma}</div></div>
+      <div class="camp-metric"><div class="cm-label">Leads/mês</div><div class="cm-val">${c.campanhas.leads}</div></div>
+      <div class="camp-metric"><div class="cm-label">CPL</div><div class="cm-val">R$${c.campanhas.cpl}</div></div>
+      <div class="camp-metric"><div class="cm-label">CTR</div><div class="cm-val ${c.campanhas.ctr>=3?'cm-good':'cm-bad'}">${c.campanhas.ctr}%</div></div>
+    </div>`;
+  openModal('modal-cliente');
+}
+
+/* ═══════════════════════════════════════════════
+   04 VENDAS
+═══════════════════════════════════════════════ */
+function renderVendas(){
+  const props=[
+    {id:1,cliente:'Alves Imobiliário',produto:'Tráfego + GBP',valor:3200,enviada:'02/05',dias:11,status:'aguardando'},
+    {id:2,cliente:'Guimarães Adv.',produto:'Tráfego + Agente IA',valor:5800,enviada:'29/04',dias:14,status:'negociando'},
+    {id:3,cliente:'Costa Família',produto:'Tráfego Pago Full',valor:4200,enviada:'05/05',dias:8,status:'aguardando'},
+    {id:4,cliente:'Pires Criminal',produto:'Gestão Google Ads',valor:2900,enviada:'07/05',dias:6,status:'revisão'},
+  ];
+  document.getElementById('tb-propostas').innerHTML=props.map(p=>`<tr>
+    <td class="td-main">${p.cliente}</td><td>${p.produto}</td>
+    <td>R$${p.valor.toLocaleString('pt-BR')}</td>
+    <td style="color:var(--text-muted)">${p.enviada}</td>
+    <td><span style="color:${p.dias>10?'var(--pink)':p.dias>7?'#B7890A':'var(--text-sub)'};font-weight:700">${p.dias}d</span></td>
+    <td><span class="tag ${{aguardando:'tag-yellow',negociando:'tag-blue',revisão:'tag-gray'}[p.status]}">${p.status}</span></td>
+    <td><div style="display:flex;gap:4px">
+      <span class="btn btn-ghost btn-xs" onclick="toast('Follow-up enviado!','success')">Follow-up</span>
+      <span class="btn btn-danger btn-xs" onclick="toast('Proposta arquivada','info')">✕</span>
+    </div></td>
+  </tr>`).join('');
+  setTimeout(()=>{
+    const fEl=document.getElementById('chart-fechamentos');
+    if(fEl)fEl.innerHTML=svgBars(fEl.offsetWidth||340,160,['Dez','Jan','Fev','Mar','Abr','Mai'],[1,2,1,3,2,2],['#6C5CE7']);
+  },80);
+  document.getElementById('metricas-conversao').innerHTML=[
+    {l:'Produto mais vendido',v:'Tráfego Pago'},{l:'Ticket médio',v:'R$ 4.350'},
+    {l:'Ciclo médio de venda',v:'18 dias'},{l:'Conversão proposta→fechamento',v:'38%'},
+    {l:'Propostas enviadas (mai)',v:'4'},{l:'Pipeline em aberto',v:'R$ 16.100'},
+  ].map(x=>`<div class="metric-row"><span class="metric-label">${x.l}</span><span class="metric-val">${x.v}</span></div>`).join('');
+  document.getElementById('metas-vendas').innerHTML=[
+    {label:'Meta MRR — Mai 2025',atual:38400,meta:42000,isVal:true},
+    {label:'Novos clientes (0/2)',atual:0,meta:2},
+    {label:'Upsell (1/3 clientes)',atual:1,meta:3},
+  ].map(m=>{
+    const pct=Math.round((m.atual/m.meta)*100);
+    const color=pct>=80?'pf-green':pct>=50?'pf-yellow':'pf-pink';
+    return `<div class="goal-item"><div class="goal-header"><span class="goal-label">${m.label}</span><span class="goal-pct">${m.isVal?pct+'%':m.atual+'/'+m.meta}</span></div><div class="progress-wrap"><div class="progress-fill ${color}" style="width:${Math.min(100,pct)}%"></div></div></div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   05 TRÁFEGO
+═══════════════════════════════════════════════ */
+function renderTrafego(){
+  document.getElementById('alertas-trafego').innerHTML=`
+    <div class="alert alert-warn">⚠ CPL acima da meta: Barbosa Advocacia (R$54 vs R$40) · Rocha Imobiliário (R$71 vs R$50)</div>
+    <div class="alert alert-danger">✕ CTR abaixo de 3%: Barbosa Advocacia (2.8%) · Rocha Imobiliário (2.1%)</div>
+    <div class="alert alert-info">💡 Orçamento >80%: Rocha Imobiliário (83%) — verificar saldo da conta</div>`;
+  const sMap={ativo:'tag-green',pausado:'tag-gray',alerta:'tag-yellow',otimizando:'tag-blue'};
+  document.getElementById('camp-cards').innerHTML=DATA.campanhas.map(c=>`
+    <div class="camp-card ${c.status==='alerta'?'alert-card':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div><div class="camp-client">${c.cliente}</div><span class="camp-platform-tag ${c.plataforma==='Google Ads'?'pt-google':'pt-meta'}">${c.plataforma}</span></div>
+        <span class="tag ${sMap[c.status]}">${c.status}</span>
+      </div>
+      <div class="camp-metrics">
+        <div class="camp-metric"><div class="cm-label">Leads/mês</div><div class="cm-val">${c.leads}</div></div>
+        <div class="camp-metric"><div class="cm-label">CPL atual</div><div class="cm-val ${c.cpl>c.meta_cpl?'cm-bad':'cm-good'}">R$${c.cpl}</div><div class="cm-sub">meta R$${c.meta_cpl}</div></div>
+        <div class="camp-metric"><div class="cm-label">CTR</div><div class="cm-val ${c.ctr<3?'cm-bad':'cm-good'}">${c.ctr}%</div></div>
+        <div class="camp-metric"><div class="cm-label">Gasto</div><div class="cm-val">R$${c.gasto.toLocaleString('pt-BR')}</div><div class="cm-sub">/ R$${c.orcamento.toLocaleString('pt-BR')}</div></div>
+      </div>
+      <div style="margin-top:10px"><div class="progress-wrap"><div class="progress-fill ${(c.gasto/c.orcamento)>0.8?'pf-pink':'pf-purple'}" style="width:${Math.round(c.gasto/c.orcamento*100)}%"></div></div><div style="font-size:11px;color:var(--text-muted);margin-top:3px;text-align:right">${Math.round(c.gasto/c.orcamento*100)}% do orçamento</div></div>
+      <div style="margin-top:10px;display:flex;gap:6px">
+        <span class="btn btn-ghost btn-xs" onclick="toast('Abrindo detalhes...','info')">Ver Detalhes</span>
+        <span class="btn btn-outline btn-xs" onclick="toast('Otimização solicitada','info')">Otimizar</span>
+      </div>
+    </div>`).join('');
+  setTimeout(()=>{
+    const cEl=document.getElementById('chart-cpl');
+    if(cEl)cEl.innerHTML=svgLine(cEl.offsetWidth||480,180,[
+      {vals:[52,46,38],color:'#6C5CE7',width:2,fill:true},{vals:[62,58,54],color:'#FF7675',width:2},
+      {vals:[38,32,29],color:'#27AE60',width:2},{vals:[45,45,45],color:'#FF7675',width:1,dash:'6 3',opacity:0.4},
+    ],['Mar','Abr','Mai']);
+  },80);
+  document.getElementById('tb-keywords').innerHTML=[
+    {kw:'advogado trabalhista sp',cli:'Ferreira',cliques:312,conv:18,cpc:4.20,qs:8},
+    {kw:'benefício INSS negado',cli:'Lima Prev.',cliques:489,conv:31,cpc:3.10,qs:9},
+    {kw:'planejamento tributário',cli:'Santos Trib.',cliques:201,conv:22,cpc:6.80,qs:7},
+    {kw:'advogado criminal urgente',cli:'Martins',cliques:143,conv:9,cpc:5.40,qs:6},
+    {kw:'divórcio amigável sp',cli:'Barbosa',cliques:98,conv:5,cpc:7.20,qs:6},
+  ].map(k=>`<tr><td class="td-main" style="font-size:12px">${k.kw}</td><td>${k.cli}</td><td>${k.cliques}</td><td>${k.conv}</td><td>R$${k.cpc.toFixed(2)}</td><td><span style="color:${k.qs>=8?'var(--green)':k.qs>=6?'#B7890A':'var(--pink)'};font-weight:800">${k.qs}/10</span></td></tr>`).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   06 CONCORRENTES
+═══════════════════════════════════════════════ */
+function renderConcorrentes(){
+  const idx=parseInt(document.getElementById('sel-cliente-conc').value)||0;
+  const d=DATA.concorrentes[idx];if(!d)return;
+  const siteC={Rápido:'var(--green)',Médio:'#B7890A',Lento:'var(--pink)'};
+  const instaC={Ativo:'var(--green)',Irregular:'#B7890A',Inativo:'var(--pink)'};
+  const row=(c,own)=>`<tr ${own?'class="competitor-own"':''}>
+    <td>${own?'<span class="tag tag-purple">VOCÊ</span>':'<span class="tag tag-gray">COMP</span>'}</td>
+    <td class="td-main">${c.nome}</td>
+    <td style="font-weight:800;color:${c.maps<=2?'var(--green)':c.maps<=3?'#B7890A':'var(--pink)'}">📍 #${c.maps}</td>
+    <td>${c.aval}</td>
+    <td style="color:var(--purple);font-weight:700">${c.nota}⭐</td>
+    <td style="color:${siteC[c.site]};font-weight:600">${c.site}</td>
+    <td style="color:${instaC[c.insta]};font-weight:600">${c.insta}</td>
+    <td>${c.ads?'<span class="tag tag-green">Sim</span>':'<span class="tag tag-pink">Não</span>'}</td>
+    <td><span style="font-size:15px;font-weight:800;color:${c.score>=80?'var(--green)':c.score>=60?'#B7890A':'var(--pink)'}">${c.score}</span></td>
+  </tr>`;
+  document.getElementById('tb-conc-body').innerHTML=row({nome:d.cliente,...d.proprio},true)+d.concs.map(c=>row(c,false)).join('');
+  document.getElementById('conc-faz').innerHTML=d.faz;
+  document.getElementById('conc-oport').innerHTML=d.oport;
+  document.getElementById('conc-acao').textContent=d.acao;
+  document.getElementById('conc-alertas').innerHTML=`
+    <div class="alert alert-warn">⚡ Concorrente subiu posição no Maps em Abr/2025</div>
+    <div class="alert alert-info">📢 Novo anunciante detectado no Google Ads — iniciou há 14 dias</div>
+    <div class="alert alert-ok">✓ Lima Previdenciário mantém posição #1 pelo 5º mês consecutivo</div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   07 FINANCEIRO
+═══════════════════════════════════════════════ */
+function renderFinanceiro(){
+  document.getElementById('fin-kpis').innerHTML=[
+    {label:'MRR Atual',val:'R$38.4k',delta:'▲ +12.3%',up:true},
+    {label:'Receita Mai',val:'R$32.1k',delta:'Pago até agora',up:true},
+    {label:'Prevista',val:'R$38.4k',delta:'100% contratos',up:true},
+    {label:'Custos Mai',val:'R$8.3k',delta:'21.6% da receita',up:false},
+    {label:'Margem',val:'78.4%',delta:'▲ +2.1pp',up:true},
+    {label:'vs Abr/2025',val:'▲ R$1.5k',delta:'receita bruta',up:true},
+  ].map(k=>`<div class="fin-kpi"><div class="fin-kpi-val">${k.val}</div><div class="fin-kpi-label">${k.label}</div><div class="fin-kpi-delta" style="color:${k.up?'var(--green)':'var(--pink)'}">${k.delta}</div></div>`).join('');
+
+  document.getElementById('tb-recebimentos').innerHTML=DATA.financeiro.recebimentos.map(r=>`<tr>
+    <td class="td-main">${r.cliente}</td><td>R$${r.valor.toLocaleString('pt-BR')}</td>
+    <td style="color:var(--text-muted)">${r.venc}</td>
+    <td>${r.status==='pago'?'<span class="tag tag-green">Pago</span>':'<span class="tag tag-yellow">Pendente</span>'}</td>
+    <td>${r.atraso>0?`<span style="color:var(--pink);font-weight:700">${r.atraso}d</span>`:'-'}</td>
+    <td>${r.status==='pendente'?`<span class="btn btn-ghost btn-xs" onclick="toast('Cobrança enviada!','success')">Cobrar</span>`:'—'}</td>
+  </tr>`).join('');
+
+  document.getElementById('tb-custos').innerHTML=DATA.financeiro.custos.map(c=>`<tr>
+    <td class="td-main">${c.cat}</td><td>R$${c.val.toLocaleString('pt-BR')}</td>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="progress-wrap" style="width:70px"><div class="progress-fill pf-blue" style="width:${c.pct*3.3}%"></div></div><span style="font-size:12px;color:var(--text-muted)">${c.pct}%</span></div></td>
+  </tr>`).join('');
+
+  setTimeout(()=>{
+    const fcEl=document.getElementById('chart-fin');
+    if(fcEl&&fcEl.offsetWidth>0){
+      const W=fcEl.offsetWidth,H=180,PAD={t:20,r:20,b:32,l:50};
+      const w=W-PAD.l-PAD.r,h=H-PAD.t-PAD.b;
+      const rec=DATA.financeiro.hist_rec,cust=DATA.financeiro.hist_cust;
+      const maxV=Math.max(...rec)*1.1;
+      const bw=Math.max(8,(w/rec.length)*0.28),gap=(w-(bw*2*rec.length))/(rec.length+1);
+      let svg=`<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">`;
+      [0,0.5,1].forEach(f=>{const y=PAD.t+h-f*h;svg+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#F3F4F6" stroke-width="1"/>`;svg+=`<text x="${PAD.l-4}" y="${y+3}" font-family="Inter,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">R$${((maxV*f)/1000).toFixed(0)}k</text>`;});
+      DATA.mrr_meses.forEach((l,i)=>{
+        const x0=PAD.l+gap+(bw*2+gap)*i,rh=(rec[i]/maxV)*h,ch=(cust[i]/maxV)*h;
+        svg+=`<rect x="${x0}" y="${PAD.t+h-rh}" width="${bw}" height="${rh}" rx="4" fill="#6C5CE7" opacity="0.85"/>`;
+        svg+=`<rect x="${x0+bw+2}" y="${PAD.t+h-ch}" width="${bw}" height="${ch}" rx="4" fill="#FF7675" opacity="0.85"/>`;
+        svg+=`<text x="${x0+bw}" y="${H-4}" font-family="Inter,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">${l}</text>`;
+      });
+      fcEl.innerHTML=svg+'</svg>';
+    }
+    const pzEl=document.getElementById('chart-pizza');
+    if(pzEl){
+      const pzData=[{label:'Recorrente',val:32400,color:'#6C5CE7'},{label:'Projetos',val:4200,color:'#2D9CDB'},{label:'Consultoria',val:1800,color:'#F2C94C'}];
+      pzEl.innerHTML=svgDonut(pzData,160)+`<div>${pzData.map(p=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="width:10px;height:10px;border-radius:3px;background:${p.color};flex-shrink:0"></div><div><div style="font-size:13px;font-weight:600;color:var(--text-main)">${p.label}</div><div style="font-size:12px;color:var(--text-muted)">R$${p.val.toLocaleString('pt-BR')}</div></div></div>`).join('')}</div>`;
+    }
+  },80);
+
+  document.getElementById('fin-projecoes').innerHTML=[
+    {l:'Manter churn: receita 3m',v:'R$ 35.2k'},{l:'Sem churn: receita 3m',v:'R$ 41.8k'},
+    {l:'+2 clientes: receita 3m',v:'R$ 49.4k'},{l:'Break-even CLT (R$5k)',v:'MRR ≥ R$ 43.0k'},
+    {l:'Runway atual',v:'4.2 meses'},
+  ].map(x=>`<div class="metric-row"><span class="metric-label">${x.l}</span><span class="metric-val">${x.v}</span></div>`).join('');
+
+  document.getElementById('fin-saude').innerHTML=[
+    {l:'Reserva de caixa',v:'4.2 meses',ok:true},{l:'Concentração maior cliente',v:'20.3%',ok:true},
+    {l:'Churn financeiro (mai)',v:'R$3.400',ok:false},{l:'Inadimplência em aberto',v:'R$6.300',ok:false},
+    {l:'Margem de contribuição',v:'78.4%',ok:true},
+  ].map(x=>`<div class="health-item"><div class="dot ${x.ok?'dot-green':'dot-yellow'}"></div><span class="health-label">${x.l}</span><span class="health-val" style="color:${x.ok?'var(--green)':'#B7890A'}">${x.v}</span></div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   08 WHATSAPP
+═══════════════════════════════════════════════ */
+function renderWhatsapp(){
+  document.getElementById('wa-kpis').innerHTML=[
+    {label:'Mensagens Recebidas',val:'84',meta:'hoje',icon:'💬'},
+    {label:'Respondidas (IA)',val:'77',meta:'91.7%',icon:'🤖'},
+    {label:'Escaladas Humano',val:'7',meta:'hoje',icon:'👤'},
+    {label:'Tempo Médio Resposta',val:'2.3min',meta:'meta <5min',icon:'⏱'},
+  ].map(k=>`<div class="card card-sm"><div style="font-size:22px;margin-bottom:8px">${k.icon}</div><div class="card-label">${k.label}</div><div class="card-value" style="font-size:24px;margin-top:4px">${k.val}</div><div class="card-meta">${k.meta}</div></div>`).join('');
+
+  document.getElementById('wa-fila').innerHTML=[
+    {num:'(11) 9 8823-4121',motivo:'Proposta acima de R$8k',tempo:'14min'},
+    {num:'(11) 9 7742-8830',motivo:'Dúvida técnica de processo',tempo:'31min'},
+    {num:'(21) 9 9102-7743',motivo:'Solicitou falar com gerente',tempo:'52min'},
+  ].map(f=>`<div class="wa-queue-item">
+    <div style="flex:1"><div class="wa-number">${f.num}</div><div class="wa-reason">${f.motivo}</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <span class="wa-time">⏱ ${f.tempo}</span>
+      <span class="btn btn-success btn-xs" onclick="toast('Conversa assumida!','success')">Assumir</span>
+    </div>
+  </div>`).join('');
+
+  document.getElementById('tb-wa-hist').innerHTML=[
+    {num:'(11) 9 9801-...',assunto:'Consulta sobre rescisão',res:'lead',hora:'14:51'},
+    {num:'(11) 9 8834-...',assunto:'Info sobre honorários',res:'info',hora:'14:43'},
+    {num:'(21) 9 7712-...',assunto:'Agendamento reunião',res:'agendamento',hora:'14:38'},
+    {num:'(11) 9 6621-...',assunto:'Problema processo',res:'escalada',hora:'14:29'},
+  ].map(w=>`<tr><td style="font-size:12px">${w.num}</td><td class="td-main" style="font-size:12px">${w.assunto}</td><td><span class="tag ${{lead:'tag-purple',info:'tag-gray',agendamento:'tag-green',escalada:'tag-yellow'}[w.res]}">${w.res}</span></td><td style="color:var(--text-muted)">${w.hora}</td></tr>`).join('');
+
+  document.getElementById('tb-email-seq').innerHTML=[
+    {nome:'Nutrição Trabalhista',contatos:142,abertura:44,clique:12,conv:8},
+    {nome:'Pós-consulta Previdenciário',contatos:89,abertura:61,clique:23,conv:14},
+    {nome:'Re-engajamento Leads Frios',contatos:213,abertura:28,clique:6,conv:3},
+    {nome:'Onboarding Novos Clientes',contatos:8,abertura:92,clique:78,conv:8},
+  ].map(s=>`<tr><td class="td-main">${s.nome}</td><td>${s.contatos}</td>
+    <td><span style="color:${s.abertura>=50?'var(--green)':s.abertura>=30?'#B7890A':'var(--pink)'};font-weight:700">${s.abertura}%</span></td>
+    <td><span style="color:${s.clique>=15?'var(--green)':s.clique>=8?'#B7890A':'var(--pink)'};font-weight:700">${s.clique}%</span></td>
+    <td style="color:var(--purple);font-weight:800">${s.conv}</td></tr>`).join('');
+
+  document.getElementById('tb-email-sched').innerHTML=[
+    {dest:'Guimarães Advocacia',assunto:'[Proposta] Gestão Google Ads + IA',seq:'Follow-up',hora:'09:00'},
+    {dest:'Pires Criminal',assunto:'Resultado Campanha — Semana 19',seq:'Relatório',hora:'10:30'},
+    {dest:'Soares & Mendes',assunto:'Bem-vindo à LexFlow!',seq:'Onboarding',hora:'14:00'},
+    {dest:'Costa Família',assunto:'3 estratégias para + leads',seq:'Nutrição',hora:'16:45'},
+  ].map(s=>`<tr><td class="td-main">${s.dest}</td><td style="font-size:12px">${s.assunto}</td><td><span class="tag tag-gray">${s.seq}</span></td><td style="color:var(--purple);font-weight:700">${s.hora}</td></tr>`).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   09 AGENTE IA
+═══════════════════════════════════════════════ */
+function renderAgente(){
+  document.getElementById('agent-cards').innerHTML=[
+    {nome:'Agente WhatsApp',icon:'💬',items:[{l:'Mensagens hoje',v:'84'},{l:'Tokens (dia)',v:'142k'},{l:'Modelo',v:'GPT-4o-mini'},{l:'Uptime',v:'99.8%'}]},
+    {nome:'Agente Calendário',icon:'📅',items:[{l:'Reuniões hoje',v:'3'},{l:'Próximo slot',v:'15/05 09:00'},{l:'Integrado',v:'Google Cal'},{l:'Uptime',v:'100%'}]},
+    {nome:'Agente Tráfego',icon:'📊',items:[{l:'Última verificação',v:'14:21'},{l:'Alertas ativos',v:'2'},{l:'Próxima análise',v:'15:00'},{l:'Modelo',v:'GPT-4o'}]},
+    {nome:'Agente Financeiro',icon:'💰',items:[{l:'Cobranças emitidas',v:'1'},{l:'Atrasos detectados',v:'2'},{l:'Próxima rodada',v:'18:00'},{l:'Uptime',v:'100%'}]},
+  ].map(a=>`<div class="agent-card">
+    <div class="agent-status-line">
+      <span style="font-size:20px">${a.icon}</span>
+      <span class="agent-name">${a.nome}</span>
+      <span class="agent-model"><span class="dot dot-green"></span> online</span>
+    </div>
+    ${a.items.map(m=>`<div class="metric-row"><span class="metric-label">${m.l}</span><span class="metric-val" style="font-size:12px">${m.v}</span></div>`).join('')}
+  </div>`).join('');
+
+  document.getElementById('tb-agent-log').innerHTML=DATA.agente_log.map(r=>`<tr class="${r.status==='err'?'log-row-err':''}">
+    <td style="color:var(--text-muted)">${r.hora}</td>
+    <td><span class="tag tag-purple">${r.agente}</span></td>
+    <td style="font-size:12px;color:var(--text-main)">${r.acao}</td>
+    <td style="font-size:12px">${r.resultado}</td>
+    <td style="color:var(--text-muted)">${r.dur}s</td>
+    <td class="${r.status==='ok'?'td-status-ok':'td-status-err'}">${r.status==='ok'?'● OK':'✕ ERR'}</td>
+  </tr>`).join('');
+
+  document.getElementById('agent-erros').innerHTML=`
+    <div class="alert alert-ok">✓ Nenhum erro crítico nas últimas 24h</div>
+    <div class="alert alert-warn">⚠ Timeout Z-API às 13:41 — resolvido após retry</div>
+    <div class="alert alert-warn">⚠ Rate limit OpenAI às 13:02 — resolvido</div>`;
+
+  document.getElementById('agent-consumo').innerHTML=[
+    {titulo:'OpenAI — GPT-4o',usado:'1.24M tokens',orc:'2M tokens',pct:62,custo:'R$47.20',color:'pf-purple'},
+    {titulo:'OpenAI — GPT-4o-mini',usado:'8.7M tokens',orc:'20M tokens',pct:43,custo:'R$12.40',color:'pf-blue'},
+    {titulo:'Z-API — WhatsApp',usado:'3.821 req.',orc:'10.000 req.',pct:38,custo:'R$29.00',color:'pf-green'},
+  ].map(c=>`<div style="padding:14px;border:1px solid var(--card-border);border-radius:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:10px">${c.titulo}</div>
+    <div class="metric-row"><span class="metric-label">Usado</span><span class="metric-val">${c.usado}</span></div>
+    <div class="metric-row"><span class="metric-label">Orçamento</span><span class="metric-val">${c.orc}</span></div>
+    <div class="metric-row" style="margin-bottom:8px"><span class="metric-label">Custo estimado</span><span class="metric-val" style="color:var(--purple)">${c.custo}</span></div>
+    <div class="progress-wrap"><div class="progress-fill ${c.color}" style="width:${c.pct}%"></div></div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:3px;text-align:right">${c.pct}%</div>
+  </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   10 INTELIGÊNCIA DE TRÁFEGO
+═══════════════════════════════════════════════ */
+const IT={
+  keywords:[
+    {termo:'advogado trabalhista sp',tipo:'Urgência',intencao:'Alta Intenção',obs:'Usuário com problema ativo, pronto para contratar',ang:'Medo + urgência'},
+    {termo:'benefício INSS negado o que fazer',tipo:'Problema',intencao:'Alta Intenção — Solução',obs:'Frustrado, busca solução imediata',ang:'Empatia + autoridade'},
+    {termo:'advogado previdenciário gratuito',tipo:'Custo',intencao:'Média Intenção',obs:'Pesquisa custo — converter com proposta de valor',ang:'Quebra de objeção'},
+    {termo:'calcular rescisão contrato',tipo:'Problema',intencao:'Intenção Inicial',obs:'Início do processo, educar é mais eficaz',ang:'Educação + CTA suave'},
+    {termo:'advogado família divórcio sp',tipo:'Localização',intencao:'Alta Intenção Local',obs:'Pronto para contratar, filtro geográfico importa',ang:'Urgência + prova social'},
+    {termo:'como entrar com processo trabalhista',tipo:'Solução',intencao:'Média Intenção',obs:'Pesquisando processo — momento ideal para converter',ang:'Autoridade + CTA direto'},
+    {termo:'tributário para empresas sp',tipo:'B2B',intencao:'Alta Intenção Empresarial',obs:'Alta LTV potencial, ticket maior',ang:'Oportunidade + ROI'},
+    {termo:'advogado criminal sp urgente',tipo:'Urgência',intencao:'Muito Alta Intenção',obs:'Situação crítica, velocidade é tudo',ang:'Urgência + disponibilidade 24h'},
+    {termo:'aposentadoria especial insalubre',tipo:'Problema',intencao:'Alta Intenção',obs:'Menos concorrência, CPL mais baixo',ang:'Empatia + resultado'},
+  ],
+  copies:[
+    {kw:'advogado trabalhista sp',dor:'Demissão injusta ou assédio no trabalho',copy:'Seus direitos estão sendo violados. Fale agora com um especialista.',variacao:'Demissão injusta? Não perca nem um centavo do que é seu.',cta:'Consulta Gratuita Hoje — Resposta em 15 min',ang:'Medo + Urgência'},
+    {kw:'benefício INSS negado',dor:'INSS negou e não sabe o que fazer',copy:'INSS negou seu benefício? Mais de 60% das negativas são revertidas na Justiça.',variacao:'Negado pelo INSS? Já revertemos +800 casos iguais ao seu.',cta:'Verificar Meu Caso — É Gratuito',ang:'Prova Social + Oportunidade'},
+    {kw:'advogado criminal sp urgente',dor:'Situação criminal urgente, medo e desamparo',copy:'Situação criminal urgente? Atendimento 24h. Defesa imediata.',variacao:'Preso ou indiciado? Cada hora conta. Ligue agora.',cta:'Atendimento Imediato — 24h por dia',ang:'Urgência Máxima'},
+    {kw:'aposentadoria especial insalubre',dor:'Trabalhou exposto a condições insalubres',copy:'Trabalhou exposto a ruído ou químicos? Você tem direito à aposentadoria especial.',variacao:'Descubra em 2 minutos se você tem direito à aposentadoria especial.',cta:'Verificar Meu Direito — Análise Gratuita',ang:'Oportunidade + Empatia'},
+  ],
+  campanhas_it:[
+    {nome:'Trabalhista SP — Rescisão',plataforma:'Google',ctr:4.8,cpc:3.20,cpa:380,conv:18,orc:150,status:'ativo'},
+    {nome:'INSS Negado — Benefício',plataforma:'Google',ctr:5.1,cpc:2.90,cpa:290,conv:31,orc:200,status:'ativo'},
+    {nome:'Família SP — Divórcio',plataforma:'Meta',ctr:2.8,cpc:4.10,cpa:540,conv:8,orc:120,status:'alerta'},
+    {nome:'Criminal SP — Urgente',plataforma:'Google',ctr:3.4,cpc:5.40,cpa:630,conv:9,orc:180,status:'otimizando'},
+  ],
+};
+
+function renderInteligencia(){renderITKeywords();}
+function renderITKeywords(){
+  document.getElementById('render-keywords').innerHTML=`
+    <div class="subsection-title" style="margin-bottom:16px">Database 1 — Pesquisa Estratégica de Keywords <span style="color:var(--purple);font-size:11px">(${IT.keywords.length} termos prioritários)</span></div>
+    <div class="grid-3 mb16">${IT.keywords.map(k=>`<div class="kw-card"><div class="kw-term">${k.termo}</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px"><span class="tag tag-purple" style="font-size:10px">${k.intencao}</span><span class="tag tag-gray" style="font-size:10px">${k.tipo}</span></div><div class="kw-insight">${k.obs}</div><div style="margin-top:8px;font-size:11px;font-weight:600;color:#B7890A">Ângulo: ${k.ang}</div></div>`).join('')}</div>
+    <div class="ai-box"><div class="ai-box-title">◈ Análise IA — Oportunidades de Keyword</div>
+      <div class="ai-insight"><span class="ai-insight-icon">🔥</span><span>Termos de urgência ("urgente", "24h") têm CPL 30% menor — priorize nas headlines</span></div>
+      <div class="ai-insight"><span class="ai-insight-icon">📍</span><span>Keywords com localização (SP) têm conversão 40% maior — sempre incluir na campanha</span></div>
+      <div class="ai-insight"><span class="ai-insight-icon">💡</span><span>"Aposentadoria especial insalubre" — baixa concorrência + alta intenção = CPL ideal</span></div>
+      <div class="ai-insight"><span class="ai-insight-icon">⚠️</span><span>Termos genéricos sem localização ("advogado") consomem orçamento sem converter</span></div>
+    </div>`;
+}
+function renderITCopies(){
+  document.getElementById('render-copies').innerHTML=`<div class="subsection-title" style="margin-bottom:16px">Database 2 — Copies para Anúncios</div><div style="display:flex;flex-direction:column;gap:14px">${IT.copies.map(c=>`<div class="copy-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Keyword: ${c.kw}</div><div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">💢 Dor: ${c.dor}</div><div class="copy-headline">"${c.copy}"</div><div style="font-size:13px;color:var(--text-sub);margin-top:6px">Variação: "${c.variacao}"</div><div class="copy-cta">→ CTA: ${c.cta}</div><div class="copy-angle">Ângulo: ${c.ang}</div></div><span class="btn btn-ghost btn-sm" onclick="toast('Copy copiada!','success')">📋 Copiar</span></div></div>`).join('')}</div>`;
+}
+function renderITCampanhas(){
+  const sMap={ativo:'tag-green',alerta:'tag-yellow',otimizando:'tag-blue'};
+  document.getElementById('render-campanhas').innerHTML=`<div class="subsection-title" style="margin-bottom:16px">Database 3 — Campanhas Ativas</div><div class="card mb16"><div class="table-wrap"><table><thead><tr><th>Campanha</th><th>Plataforma</th><th>CTR</th><th>CPC</th><th>CPA</th><th>Conv.</th><th>Orçamento/dia</th><th>Status</th><th>Ações</th></tr></thead><tbody>${IT.campanhas_it.map(c=>`<tr><td class="td-main">${c.nome}</td><td><span class="camp-platform-tag ${c.plataforma==='Google'?'pt-google':'pt-meta'}">${c.plataforma}</span></td><td><span style="color:${c.ctr>=4?'var(--green)':c.ctr>=3?'#B7890A':'var(--pink)'};font-weight:700">${c.ctr}%</span></td><td>R$${c.cpc.toFixed(2)}</td><td>R$${c.cpa}</td><td style="color:var(--purple);font-weight:800">${c.conv}</td><td>R$${c.orc}/dia</td><td><span class="tag ${sMap[c.status]}">${c.status}</span></td><td><span class="btn btn-ghost btn-xs" onclick="toast('Analisando...','info')">Analisar</span></td></tr>`).join('')}</tbody></table></div></div><div class="ai-box"><div class="ai-box-title">◈ Diagnóstico IA das Campanhas</div><div class="ai-insight"><span class="ai-insight-icon">✓</span><span>INSS Negado: performance excelente. CTR 5.1% + CPA R$290 → escalar orçamento</span></div><div class="ai-insight"><span class="ai-insight-icon">⚠️</span><span>Família SP: CTR 2.8% + CPA R$540 → problema na landing page. Testar nova headline</span></div><div class="ai-insight"><span class="ai-insight-icon">💰</span><span>Trabalhista e INSS performam melhor → pausar Família 7 dias e realocar orçamento</span></div></div>`;
+}
+function renderITComparativo(){
+  document.getElementById('render-comparativo').innerHTML=`<div class="subsection-title" style="margin-bottom:16px">Database 4 — Comparativo por Período</div><div class="grid-2 mb16"><div class="card"><div class="card-header"><span class="card-label">Abr vs Mai 2025</span></div>${[{l:'Total de Leads',abr:128,mai:147,up:true},{l:'CPL Médio',abr:46,mai:42,up:true},{l:'CTR Médio',abr:3.8,mai:4.2,up:true},{l:'Gasto Total',abr:7200,mai:7980,up:false},{l:'Conversões',abr:14,mai:18,up:true}].map(r=>`<div class="metric-row"><span class="metric-label">${r.l}</span><span class="metric-val"><span style="color:var(--text-muted);font-size:12px;font-weight:400;margin-right:8px">Abr: ${r.abr}</span><span style="color:${r.up?'var(--green)':'#B7890A'}">${r.up?'▲':'▼'} ${r.mai}</span></span></div>`).join('')}</div><div class="card"><div class="card-header"><span class="card-label">Qualidade por Canal</span></div>${[{canal:'Google Ads',q:'Alta',taxa:'68%',color:'var(--green)'},{canal:'Meta Ads',q:'Média',taxa:'44%',color:'#B7890A'},{canal:'WhatsApp Orgânico',q:'Alta',taxa:'72%',color:'var(--green)'},{canal:'Instagram Orgânico',q:'Baixa',taxa:'28%',color:'var(--pink)'},{canal:'Indicação',q:'Muito Alta',taxa:'88%',color:'var(--purple)'}].map(r=>`<div class="metric-row"><span class="metric-label">${r.canal}</span><div style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;color:${r.color};font-weight:600">${r.q}</span><span class="metric-val" style="color:${r.color}">${r.taxa}</span></div></div>`).join('')}</div></div>`;
+}
+function renderITDashboard(){
+  setTimeout(()=>{
+    document.getElementById('render-it-dash').innerHTML=`<div class="grid-4 mb16">${[{t:'Top Keyword',v:'INSS Negado',sub:'489 buscas/mês'},{t:'Melhor Campanha',v:'INSS — Google',sub:'CPL R$29 ✓'},{t:'Pior CTR',v:'Família — Meta',sub:'2.8% — corrigir'},{t:'Leads esta semana',v:'38',sub:'+12% vs anterior'}].map(k=>`<div class="card card-sm"><div class="card-label">${k.t}</div><div class="card-value" style="font-size:20px;color:var(--purple);margin-top:6px">${k.v}</div><div class="card-meta">${k.sub}</div></div>`).join('')}</div><div class="grid-2 mb16"><div class="card"><div class="card-header"><span class="card-label">CPL por Campanha — 3 meses</span></div><div id="chart-it-cpl"></div></div><div class="ai-box" style="padding:20px"><div class="ai-box-title">◈ Ações Prioritárias</div><div class="ai-insight"><span>🔥</span><span>Escalar INSS Negado: +R$50/dia → +15 leads projetados</span></div><div class="ai-insight"><span>⏸</span><span>Pausar Família SP por 7 dias e testar novo criativo</span></div><div class="ai-insight"><span>📢</span><span>Adicionar extensões de chamada em todos os anúncios Google</span></div><div class="ai-insight"><span>💡</span><span>Keyword negativa: adicionar "gratuito" nas campanhas pagas</span></div></div></div><div style="background:#F9FAFB;border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:22px"><div class="subsection-title" style="margin-bottom:14px">📊 Relatório Semanal — Prévia</div><div style="font-size:13px;color:var(--text-sub);line-height:1.8"><b style="color:var(--text-main)">Semana 19 / 2025 — 06 a 12 de Maio</b><br>Total Leads: 38 (+12%) · CPL Médio: R$42 (-9%) · Conversões: 6 · Melhor campanha: INSS Google<br><span style="color:#B7890A">Atenção: Campanha Família com queda de CTR. Recomenда-se revisão de criativo.</span><br><span style="color:var(--green)">Saúde Geral: ✓ Boa — 3 de 4 campanhas dentro da meta de CPL.</span></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><span class="report-btn-email" onclick="sendReport('email')">📧 Enviar por Email</span><span class="report-btn-wa" onclick="sendReport('wa')">🟢 Enviar por WhatsApp</span></div></div>`;
+    const cplEl=document.getElementById('chart-it-cpl');
+    if(cplEl)cplEl.innerHTML=svgLine(cplEl.offsetWidth||480,180,[{vals:[380,350,290],color:'#27AE60',width:2,fill:true},{vals:[540,580,540],color:'#FF7675',width:2},{vals:[420,400,380],color:'#6C5CE7',width:2},{vals:[690,650,630],color:'#F2C94C',width:2}],['Mar','Abr','Mai']);
+  },80);
+}
+function sendReport(ch){toast(ch==='email'?'Relatório enviado por email! ✓':'Relatório enviado via WhatsApp! ✓','success');}
+
+/* ═══════════════════════════════════════════════
+   11 SHEETS
+═══════════════════════════════════════════════ */
+function renderSheets(){
+  document.getElementById('render-sheets').innerHTML=`<div class="grid-3 mb24">${[
+    {nome:'Google Sheets',icon:'📋',status:'pending',desc:'Webhook n8n → Sheets API v4\nAtualização em tempo real (onEdit)\nStatus: Aguardando credencial OAuth'},
+    {nome:'Google Ads',icon:'📊',status:'disconnected',desc:'API: Google Ads API v17\nScope: métricas de campanha\nRefresh: automático a cada 6h'},
+    {nome:'Instagram Graph',icon:'📸',status:'disconnected',desc:'API: Instagram Graph API\nScope: reach, engagement\nRefresh: automático a cada 24h'},
+  ].map(s=>`<div class="card"><div class="card-header"><span style="font-size:22px">${s.icon}</span><span class="int-badge int-${s.status}" onclick="toast('Configurando ${s.nome}...','info')">${s.status==='connected'?'● Conectado':s.status==='pending'?'○ Pendente':'✕ Desconectado'}</span></div><div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px">${s.nome}</div><div style="font-size:12px;color:var(--text-muted);line-height:1.8;white-space:pre-line">${s.desc}</div></div>`).join('')}</div>
+  <div class="section-sep"></div><div class="subsection-title" style="margin-bottom:18px">Estrutura Obrigatória das 5 Planilhas</div>
+  ${[{nome:'LEADS',cor:'var(--purple)',cols:['ID','nome','escritorio','area','canal','etapa','score_bant','data_entrada','proximo_passo','valor_proposta']},{nome:'CAMPANHAS',cor:'var(--blue)',cols:['ID','cliente_id (FK)','nome_campanha','plataforma','status','orcamento_diario','leads_mes','cpl_atual','meta_cpl','ctr','gasto_mes']},{nome:'KEYWORDS',cor:'#B7890A',cols:['ID','campanha_id (FK)','termo','match_type','cliques','impressoes','conversoes','cpc_medio','quality_score','periodo']},{nome:'MÉTRICAS',cor:'var(--green)',cols:['ID','cliente_id (FK)','periodo','mrr','nps','leads_gerados','cpl_medio','checkin_realizado','status_cs']},{nome:'CONCORRENTES',cor:'var(--pink)',cols:['ID','cliente_id (FK)','nome_concorrente','posicao_maps','total_avaliacoes','nota_media','velocidade_site','instagram_status','anuncia_google','score_geral']}].map(s=>`<div class="card mb16" style="border-left:3px solid ${s.cor}"><div class="card-header"><span style="font-size:14px;font-weight:700;color:${s.cor}">📋 ${s.nome}</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${s.cols.map(c=>`<span class="tag tag-gray" style="font-size:11px">${c}</span>`).join('')}</div></div>`).join('')}
+  <div class="section-sep"></div><div class="subsection-title" style="margin-bottom:16px">Arquitetura de Atualização em Tempo Real</div>
+  <div class="grid-2"><div class="card"><div class="card-header"><span class="card-label">Fluxo de Dados</span></div>${[{n:1,t:'Usuário edita planilha',d:'Google Sheets recebe a alteração'},{n:2,t:'Trigger Apps Script',d:'onEdit() detecta e dispara webhook'},{n:3,t:'n8n recebe webhook',d:'Valida, transforma e roteia dados'},{n:4,t:'Supabase (PostgreSQL)',d:'Armazena dados estruturados'},{n:5,t:'Dashboard atualiza',d:'WebSocket <1s ou polling 30s'}].map(f=>`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #F3F4F6"><div style="width:24px;height:24px;border-radius:50%;background:var(--purple-dim);border:1px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--purple);flex-shrink:0">${f.n}</div><div><div style="font-size:13px;font-weight:600;color:var(--text-main)">${f.t}</div><div style="font-size:12px;color:var(--text-muted);margin-top:1px">${f.d}</div></div></div>`).join('')}</div><div class="card"><div class="card-header"><span class="card-label">Stack Recomendada</span></div>${[{cat:'Banco de Dados',tech:'Supabase (PostgreSQL)',motivo:'Grátis, tempo real, migração SQL fácil'},{cat:'Orquestração',tech:'n8n Cloud',motivo:'Visual, sem código, Sheets + Supabase'},{cat:'Frontend (CRM)',tech:'Vercel',motivo:'1 clique, SSL automático, grátis'},{cat:'Backend/APIs',tech:'Railway',motivo:'~US$5/mês, simples de escalar'},{cat:'Sync Sheets',tech:'Apps Script + Webhook',motivo:'onEdit() nativo, zero custo'},{cat:'Tempo Real',tech:'Supabase Realtime',motivo:'WebSocket nativo, atualização <1s'}].map(s=>`<div class="metric-row"><div><div style="font-size:13px;font-weight:600;color:var(--text-main)">${s.tech}</div><div style="font-size:11px;color:var(--text-muted)">${s.cat}</div></div><div style="font-size:12px;color:var(--text-sub);max-width:140px;text-align:right">${s.motivo}</div></div>`).join('')}</div></div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   12 DRAFTS
+═══════════════════════════════════════════════ */
+function renderDrafts(){
+  const el=document.getElementById('drafts-list');
+  if(!drafts.length){el.innerHTML=`<div class="alert alert-ok">✓ A lixeira está vazia. Itens deletados aparecem aqui por 30 dias.</div>`;return;}
+  el.innerHTML=drafts.map((d,i)=>{
+    const dias=Math.floor((d.expiry-Date.now())/(1000*60*60*24));
+    return `<div class="draft-item"><div class="draft-info"><div class="draft-name">${d.label}</div><div class="draft-meta">Tipo: ${d.type} · Deletado: ${new Date(d.deletedAt).toLocaleDateString('pt-BR')}</div><div class="draft-timer">⏱ Expira em ${dias} dias</div></div><div style="display:flex;gap:6px"><span class="btn btn-outline btn-xs" onclick="restoreDraft(${i})">↩ Restaurar</span><span class="btn btn-danger btn-xs" onclick="deleteDraftPermanent(${i})">✕</span></div></div>`;
+  }).join('');
+}
+function restoreDraft(i){
+  const d=drafts[i];
+  if(d.type==='lead'){DATA.leads.unshift(d.data);rendered['leads']=false;}
+  if(d.type==='cliente'){DATA.clientes.unshift(d.data);rendered['clientes']=false;}
+  drafts.splice(i,1);updateDraftBadge();renderDrafts();
+  toast(`${d.label} restaurado com sucesso!`,'success');
+}
+function deleteDraftPermanent(i){
+  confirmAction('Excluir Definitivamente','Esta ação não pode ser desfeita.',()=>{drafts.splice(i,1);updateDraftBadge();renderDrafts();toast('Item excluído permanentemente','info');});
+}
+
+/* ═══════════════════════════════════════════════
+   13 CONFIG
+═══════════════════════════════════════════════ */
+function renderConfig(){
+  document.getElementById('config-metas').innerHTML=[
+    {l:'Meta de MRR Mensal',val:'R$ 42.000'},{l:'CPL Máx. Trabalhista',val:'R$ 45'},
+    {l:'CPL Máx. Previdenciário',val:'R$ 35'},{l:'NPS Mínimo por Cliente',val:'70'},
+    {l:'Churn Máximo Mensal',val:'1 cliente'},{l:'Dias máx. sem check-in',val:'21 dias'},
+  ].map(m=>`<div class="input-group"><label class="input-label">${m.l}</label><input class="input" value="${m.val}"></div>`).join('');
+
+  document.getElementById('config-alertas').innerHTML=[
+    {l:'Campanha parada',d:'Notificar quando campanha parar',on:true},
+    {l:'CPL acima da meta',d:'Alertar quando CPL superar o limite',on:true},
+    {l:'Saldo baixo na conta de anúncios',d:'Alertar quando saldo < R$200',on:true},
+    {l:'Cliente sem check-in',d:'Após 21 dias sem check-in',on:true},
+    {l:'Lead sem resposta',d:'Após 48h sem follow-up',on:true},
+    {l:'Pagamento em atraso',d:'A partir do 1º dia de atraso',on:true},
+    {l:'Agente com erro',d:'Falha não resolvida em <30min',on:true},
+    {l:'Novo concorrente anunciando',d:'Quando novo concorrente detectado',on:false},
+  ].map(a=>`<div class="toggle-wrap"><div><div class="toggle-label">${a.l}</div><div class="toggle-desc">${a.d}</div></div><label class="toggle" style="margin-left:16px"><input type="checkbox" ${a.on?'checked':''}><span class="toggle-slider"></span></label></div>`).join('');
+
+  document.getElementById('config-apis').innerHTML=[
+    {nome:'OpenAI API',st:'ok',date:'Ativa · Rotação 15/04'},
+    {nome:'Z-API (WhatsApp)',st:'ok',date:'Instance ativa · OK'},
+    {nome:'Google Ads API',st:'ok',date:'OAuth ativo · Exp 15/08'},
+    {nome:'Meta Ads API',st:'warn',date:'Token expira em 12 dias'},
+    {nome:'Google Sheets API',st:'err',date:'Aguardando credencial OAuth'},
+    {nome:'Instagram Graph API',st:'err',date:'Aguardando configuração'},
+  ].map(a=>`<div class="api-row"><span class="api-name">${a.nome}</span><span class="api-${a.st==='ok'?'ok':a.st==='warn'?'warn':'err'}">${a.st==='ok'?'● Ativo':a.st==='warn'?'⚠ Atenção':'○ Pendente'}</span><span class="api-date">${a.date}</span></div>`).join('');
+
+  document.getElementById('config-seg').innerHTML=`${[
+    {l:'Log de Acessos',v:'Último: 13/05 08:42 · Rafael Menezes'},
+    {l:'2FA Status',v:'Ativado · App Authenticator'},
+    {l:'Sessões ativas',v:'1 sessão · Este dispositivo'},
+    {l:'Criptografia',v:'AES-256 em dados sensíveis'},
+    {l:'Backup automático',v:'Diário 03:00 · Supabase + GitHub'},
+    {l:'Estratégia avançada',v:'WAL point-in-time recovery'},
+  ].map(x=>`<div class="metric-row"><span class="metric-label">${x.l}</span><span class="metric-val" style="font-size:12px;text-align:right;max-width:200px;white-space:normal">${x.v}</span></div>`).join('')}<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><span class="btn btn-danger btn-sm" onclick="confirmAction('Revogar Acesso','Isso encerrará todas as sessões ativas.',()=>toast('Acesso revogado','info'))">Revogar Acesso</span><span class="btn btn-ghost btn-sm" onclick="toast('Abrindo log...','info')">Ver Log Completo</span><span class="btn btn-ghost btn-sm" onclick="toast('Backup iniciado!','success')">Backup Agora</span></div>`;
+}
+
+function saveMetas(){toast('Metas salvas com sucesso!','success');}
+function showIntegration(){toast('Abrindo configuração Google Sheets...','info');setTimeout(()=>nav('sheets'),500);}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  document.getElementById('admin-overlay').classList.add('open');
+  document.getElementById('admin-user').value='queirozestrategia';
+  document.getElementById('admin-pass').value='Joaquim.123@1';
+});
+window.addEventListener('resize',()=>{
+  if(document.querySelector('.section.active')?.id==='sec-dashboard')renderDashboard();
+});
+</script>
+</body>
+</html>

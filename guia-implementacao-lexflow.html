@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia de Implementação — LexFlow CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0C0F;
+  --panel: #111318;
+  --panel2: #161922;
+  --border: #1E2330;
+  --primary: #00D4AA;
+  --secondary: #4E9EFF;
+  --amber: #F5A623;
+  --error: #FF4757;
+  --success: #2ED573;
+  --text: #E8ECF0;
+  --text-dim: #9BA8BB;
+  --muted: #6B7A94;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;padding:0}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#1E2330;border-radius:3px}
+
+/* COVER */
+.cover{
+  background:linear-gradient(135deg,#0A0C0F 0%,#111820 50%,#0A0C0F 100%);
+  border-bottom:1px solid var(--border);
+  padding:60px 80px 50px;
+  position:relative;overflow:hidden;
+}
+.cover::before{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,170,0.08),transparent 70%);
+}
+.cover-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:4px 12px;border:1px solid var(--primary);
+  border-radius:20px;font-family:var(--mono);font-size:11px;
+  color:var(--primary);margin-bottom:20px;
+}
+.cover-dot{width:6px;height:6px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.cover h1{font-family:var(--mono);font-size:36px;font-weight:700;color:var(--text);letter-spacing:-1px;margin-bottom:12px;line-height:1.1}
+.cover h1 span{color:var(--primary)}
+.cover-sub{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+.cover-badges{display:flex;gap:10px;flex-wrap:wrap}
+.cbadge{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:4px;font-weight:600}
+.cbadge-teal{background:rgba(0,212,170,0.15);color:var(--primary);border:1px solid rgba(0,212,170,0.3)}
+.cbadge-blue{background:rgba(78,158,255,0.15);color:var(--secondary);border:1px solid rgba(78,158,255,0.3)}
+.cbadge-amber{background:rgba(245,166,35,0.15);color:var(--amber);border:1px solid rgba(245,166,35,0.3)}
+
+/* NAV */
+.toc-wrap{
+  background:var(--panel);border-bottom:1px solid var(--border);
+  padding:20px 80px;position:sticky;top:0;z-index:100;
+}
+.toc{display:flex;gap:0;flex-wrap:wrap}
+.toc-item{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  padding:6px 14px;cursor:pointer;border-radius:4px;
+  letter-spacing:1px;text-transform:uppercase;transition:all 0.15s;
+  text-decoration:none;
+}
+.toc-item:hover{color:var(--primary);background:rgba(0,212,170,0.1)}
+
+/* CONTENT */
+.content{max-width:900px;margin:0 auto;padding:50px 80px 80px}
+@media(max-width:768px){.cover,.toc-wrap,.content{padding-left:24px;padding-right:24px}.cover h1{font-size:24px}}
+
+/* SECTIONS */
+.section{margin-bottom:60px;scroll-margin-top:80px}
+.section-header{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:28px;padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.section-num{
+  font-family:var(--mono);font-size:11px;color:var(--primary);
+  background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);
+  padding:3px 10px;border-radius:4px;letter-spacing:2px;flex-shrink:0;
+}
+.section-title{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px}
+
+/* ANALOGY BOX */
+.analogy{
+  background:linear-gradient(135deg,rgba(78,158,255,0.08),rgba(0,212,170,0.05));
+  border:1px solid rgba(78,158,255,0.3);border-radius:10px;
+  padding:18px 20px;margin-bottom:20px;
+  display:flex;gap:14px;align-items:flex-start;
+}
+.analogy-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.analogy-text{font-family:var(--sans);font-size:14px;color:var(--secondary);line-height:1.7}
+.analogy-text b{color:var(--text);font-weight:600}
+
+/* STEP BOXES */
+.step{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:20px 22px;margin-bottom:12px;
+  position:relative;padding-left:60px;
+}
+.step-num{
+  position:absolute;left:18px;top:18px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--primary);color:#000;
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.step-title{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+.step-body{font-family:var(--sans);font-size:14px;color:var(--text-dim);line-height:1.7}
+.step-body b{color:var(--text);font-weight:600}
+.step-body a{color:var(--primary);text-decoration:none}
+.step-body a:hover{text-decoration:underline}
+
+/* CODE BLOCKS */
+.code-block{
+  background:#0d1117;border:1px solid #21262d;
+  border-radius:8px;padding:16px 18px;margin:10px 0;
+  font-family:var(--mono);font-size:12px;color:#e6edf3;
+  overflow-x:auto;line-height:1.7;position:relative;
+}
+.code-block .comment{color:#8b949e}
+.code-block .key{color:#79c0ff}
+.code-block .val{color:#a5d6ff}
+.code-block .str{color:#a8ff78}
+.code-block .kw{color:#ff7b72}
+.code-label{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;
+}
+
+/* ALERT BOXES */
+.alert{border-radius:8px;padding:14px 16px;margin:14px 0;font-family:var(--sans);font-size:14px;display:flex;gap:10px}
+.alert-warn{background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.35);color:var(--amber)}
+.alert-ok{background:rgba(46,213,115,0.1);border:1px solid rgba(46,213,115,0.35);color:var(--success)}
+.alert-info{background:rgba(78,158,255,0.1);border:1px solid rgba(78,158,255,0.35);color:var(--secondary)}
+.alert-danger{background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.35);color:var(--error)}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert b{font-weight:600}
+
+/* COMPARISON TABLE */
+.compare-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;margin:14px 0}
+.compare-table th{padding:10px 14px;background:var(--panel2);color:var(--muted);font-weight:500;text-align:left;font-size:11px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--border)}
+.compare-table td{padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);vertical-align:top}
+.compare-table tr:hover td{background:rgba(255,255,255,0.02)}
+.best{color:var(--success)!important;font-weight:700}
+.ok{color:var(--amber)!important}
+.bad{color:var(--error)!important}
+.rec-row td{background:rgba(0,212,170,0.05)!important;border-color:rgba(0,212,170,0.2)!important}
+
+/* METRIC ROW */
+.mrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:13px}
+.mrow:last-child{border-bottom:none}
+.mlabel{color:var(--muted)}
+.mval{color:var(--text);font-weight:600}
+.mval.green{color:var(--success)}.mval.amber{color:var(--amber)}.mval.blue{color:var(--secondary)}
+
+/* CARD */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.card-title{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:12px}
+.card p{font-family:var(--sans);font-size:14px;color:var(--text-dim);line-height:1.7;margin-bottom:8px}
+.card p:last-child{margin-bottom:0}
+.card b{color:var(--text)}
+
+/* SECURITY LEVELS */
+.sec-level{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:14px 16px;border-radius:8px;margin-bottom:8px;
+}
+.sec-green{background:rgba(46,213,115,0.08);border:1px solid rgba(46,213,115,0.25)}
+.sec-amber{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25)}
+.sec-red{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.25)}
+.sec-icon{font-size:18px;flex-shrink:0}
+.sec-title{font-family:var(--mono);font-size:13px;font-weight:700;margin-bottom:4px}
+.sec-green .sec-title{color:var(--success)}.sec-amber .sec-title{color:var(--amber)}.sec-red .sec-title{color:var(--error)}
+.sec-desc{font-family:var(--sans);font-size:13px;color:var(--text-dim);line-height:1.6}
+
+/* FLOW DIAGRAM */
+.flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:16px 0}
+.flow-box{
+  background:var(--panel2);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;
+  font-family:var(--mono);font-size:12px;color:var(--text-dim);
+  text-align:center;min-width:110px;
+}
+.flow-box b{display:block;color:var(--primary);font-size:13px;margin-bottom:2px}
+.flow-arr{font-size:18px;color:var(--muted);padding:0 6px;flex-shrink:0}
+
+/* PRICE TAG */
+.price-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);
+  border-radius:20px;padding:3px 12px;
+  font-family:var(--mono);font-size:12px;color:var(--primary);font-weight:700;
+}
+.price-free{background:rgba(46,213,115,0.12);border-color:rgba(46,213,115,0.3);color:var(--success)}
+
+/* DIVIDER */
+hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+
+/* FINAL BOX */
+.final-box{
+  background:linear-gradient(135deg,rgba(0,212,170,0.08),rgba(78,158,255,0.05));
+  border:1px solid rgba(0,212,170,0.3);border-radius:12px;
+  padding:28px 30px;margin-top:40px;text-align:center;
+}
+.final-box h3{font-family:var(--mono);font-size:18px;color:var(--primary);margin-bottom:10px}
+.final-box p{font-family:var(--sans);font-size:14px;color:var(--text-dim);line-height:1.7}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-tag"><span class="cover-dot"></span> Guia Técnico Completo</div>
+  <h1>Como tirar o<br><span>LexFlow CRM</span> do papel</h1>
+  <div class="cover-sub">Do HTML estático ao sistema real · Dados reais · APIs conectadas · Segurança profissional</div>
+  <div class="cover-badges">
+    <span class="cbadge cbadge-teal">Passo a passo completo</span>
+    <span class="cbadge cbadge-blue">Nível: iniciante amigável</span>
+    <span class="cbadge cbadge-amber">Custo estimado: R$0 a R$80/mês</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="toc-wrap">
+  <div class="toc">
+    <a class="toc-item" href="#s1">01 · Situação Atual</a>
+    <a class="toc-item" href="#s2">02 · Banco de Dados</a>
+    <a class="toc-item" href="#s3">03 · Hospedagem</a>
+    <a class="toc-item" href="#s4">04 · Segurança</a>
+    <a class="toc-item" href="#s5">05 · APIs</a>
+    <a class="toc-item" href="#s6">06 · Passo a Passo</a>
+    <a class="toc-item" href="#s7">07 · Custos</a>
+    <a class="toc-item" href="#s8">08 · Resumo Final</a>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════ 01 ═══════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">O que você tem hoje — e o que falta</span>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-icon">🏠</span>
+    <div class="analogy-text">
+      <b>Imagine que você tem a maquete de uma casa.</b> Ela é linda, tem janelas, portas, cômodos, tudo. Mas ainda é só papel e plástico — ninguém pode morar nela. O CRM que você tem agora é exatamente isso: a maquete perfeita. Precisamos construir a casa de verdade.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">O que é o arquivo HTML que você tem</div>
+    <p>É como um <b>desenho muito bonito</b> de um painel. Todos os números, gráficos e tabelas que você vê são <b>inventados dentro do próprio arquivo</b>. Se você deletar um lead, ele desaparece quando você fecha o navegador. Se você adicionar um cliente, ele some na próxima vez que abrir.</p>
+    <p>Isso se chama <b>"dados mockados"</b> — dados de mentira só para mostrar como vai ficar. É normal e necessário no início do desenvolvimento.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">O que precisa ser construído</div>
+    <p>Para funcionar de verdade, precisamos de 3 coisas, como em qualquer sistema:</p>
+    <div class="mrow"><span class="mlabel">1. Um banco de dados</span><span class="mval green">Onde as informações ficam salvas</span></div>
+    <div class="mrow"><span class="mlabel">2. Um servidor (backend)</span><span class="mval blue">O "cérebro" que conecta tudo</span></div>
+    <div class="mrow"><span class="mlabel">3. Uma hospedagem</span><span class="mval amber">Onde o sistema fica na internet</span></div>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-icon">🧠</span>
+    <div class="analogy-text">
+      <b>Analogia simples:</b> Pensa num restaurante. O HTML é o cardápio bonito. O banco de dados é a cozinha com os ingredientes. O servidor é o garçom que vai e volta entre os dois. A hospedagem é o prédio onde o restaurante funciona.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 02 ═══════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">O banco de dados — onde suas informações ficam salvas</span>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-icon">📦</span>
+    <div class="analogy-text">
+      <b>O banco de dados é como uma planilha do Excel gigante que fica na nuvem.</b> Quando você adiciona um lead, ele vai para lá. Quando você abre o sistema amanhã, ele ainda está lá. É a memória permanente do sistema.
+    </div>
+  </div>
+
+  <p style="font-family:var(--sans);font-size:15px;color:var(--text-dim);margin-bottom:16px">Para o seu caso, a melhor opção é o <b style="color:var(--primary)">Supabase</b>. Veja por quê:</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Opção</th><th>Preço</th><th>Dificuldade</th><th>Indicado para você?</th></tr></thead>
+    <tbody>
+      <tr class="rec-row"><td><b>Supabase ✓ RECOMENDADO</b></td><td class="best">Grátis até 500MB</td><td class="best">Fácil — tem painel visual</td><td class="best">✓ Sim, perfeito</td></tr>
+      <tr><td>Firebase (Google)</td><td>Grátis limitado</td><td class="ok">Médio</td><td class="ok">Funciona, mas mais complexo</td></tr>
+      <tr><td>PlanetScale</td><td>Grátis limitado</td><td class="ok">Médio</td><td class="ok">Alternativa viável</td></tr>
+      <tr><td>MySQL VPS</td><td>R$20-80/mês</td><td class="bad">Difícil — você gerencia tudo</td><td class="bad">✗ Não recomendado agora</td></tr>
+      <tr><td>Hostinger MySQL</td><td>Incluso no plano</td><td class="ok">Médio</td><td class="ok">Funciona, porém menos recursos</td></tr>
+    </tbody>
+  </table>
+
+  <div class="alert alert-ok">
+    <span class="alert-icon">✓</span>
+    <div><b>Por que Supabase?</b> É gratuito, tem painel visual bonito (você vê seus dados como uma planilha), tem autenticação embutida, criptografia automática, backup automático, e dá pra conectar direto no seu HTML com poucas linhas de código. É o preferido de startups no mundo todo.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Como o Supabase funciona — na prática</div>
+    <p>Você cria uma conta gratuita em <b>supabase.com</b>. Lá, você cria "tabelas" (como abas no Excel) para cada tipo de informação: uma tabela de Leads, uma de Clientes, uma de Campanhas, etc.</p>
+    <p>O Supabase te dá uma <b>URL + chave secreta</b>. Você coloca essa chave no CRM e pronto — o sistema passa a salvar e buscar dados reais em vez dos dados inventados.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 03 ═══════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Hospedagem — onde o sistema fica na internet</span>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-icon">🏢</span>
+    <div class="analogy-text">
+      <b>Hospedagem é como alugar um espaço na internet.</b> É um computador que fica ligado 24h por dia no mundo, guardando seu sistema. Quando alguém acessa "lexflow.queirozestrategia.com.br", esse computador entrega o site para o visitante.
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <span class="alert-icon">⚠</span>
+    <div><b>Sobre a Hostinger:</b> A Hostinger é boa para sites simples (WordPress, landing pages). Para um CRM com banco de dados real, APIs e agentes IA, ela é limitada. Não é impossível, mas vai gerar dificuldades técnicas desnecessárias. Recomendo as opções abaixo.</div>
+  </div>
+
+  <table class="compare-table">
+    <thead><tr><th>Plataforma</th><th>Preço</th><th>Para o HTML estático</th><th>Para o backend/API</th><th>Recomendação</th></tr></thead>
+    <tbody>
+      <tr class="rec-row"><td><b>Vercel ✓</b></td><td class="best">Grátis</td><td class="best">Perfeito — 1 clique</td><td class="ok">Funciona com limitações</td><td class="best">CRM visual (frontend)</td></tr>
+      <tr class="rec-row"><td><b>Railway ✓</b></td><td class="ok">~US$5/mês</td><td class="best">Excelente</td><td class="best">Perfeito</td><td class="best">Backend + APIs</td></tr>
+      <tr><td>Render</td><td class="best">Grátis (dorme)</td><td class="best">Ótimo</td><td class="ok">Bom, mas lento no free</td><td class="ok">Alternativa</td></tr>
+      <tr><td>Netlify</td><td class="best">Grátis</td><td class="best">Ótimo</td><td class="bad">Não serve para backend</td><td class="ok">Só frontend</td></tr>
+      <tr><td>Hostinger</td><td class="ok">R$10-30/mês</td><td class="ok">Funciona</td><td class="bad">Muito limitado</td><td class="bad">Não recomendado</td></tr>
+      <tr><td>VPS Digital Ocean</td><td class="ok">US$6/mês</td><td class="ok">Funciona</td><td class="best">Completo</td><td class="ok">Se souber Linux</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card">
+    <div class="card-title">Estratégia recomendada (mais barata e fácil)</div>
+    <div class="flow">
+      <div class="flow-box"><b>HTML/CRM</b>Vercel<br><span style="color:var(--success);font-size:11px">Grátis</span></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><b>APIs/Backend</b>Railway<br><span style="color:var(--amber);font-size:11px">~US$5/mês</span></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><b>Banco de Dados</b>Supabase<br><span style="color:var(--success);font-size:11px">Grátis</span></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><b>Automações</b>n8n Cloud<br><span style="color:var(--success);font-size:11px">Grátis</span></div>
+    </div>
+    <p style="font-family:var(--sans);font-size:13px;color:var(--muted);margin-top:8px">Custo total: ~US$5/mês (≈ R$28/mês). O n8n é o que conecta suas planilhas Google Sheets ao sistema em tempo real.</p>
+  </div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">💡</span>
+    <div><b>Domínio próprio:</b> Para ter <b>lexflow.seunome.com.br</b>, registre em <b>Registro.br</b> (R$40/ano para .com.br) ou no <b>Google Domains</b> (US$12/ano para .com). Depois você aponta o domínio para o Vercel em 5 minutos.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 04 ═══════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Segurança — nível profissional explicado</span>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-icon">🔐</span>
+    <div class="analogy-text">
+      <b>Segurança é como a proteção de uma casa.</b> Você tem a tranca da porta (login com senha), câmeras (log de acessos), cofre (criptografia), seguro (backup), e um porteiro eletrônico (2FA). Cada camada protege de um tipo diferente de invasão.
+    </div>
+  </div>
+
+  <p style="font-family:var(--sans);font-size:15px;color:var(--text-dim);margin-bottom:16px"><b style="color:var(--text)">Avaliação honesta do sistema atual:</b></p>
+
+  <div class="sec-level sec-amber">
+    <span class="sec-icon">⚠</span>
+    <div>
+      <div class="sec-title">Nível atual: BAIXO-MÉDIO (apenas para demo)</div>
+      <div class="sec-desc">O HTML que você tem agora tem login com usuário e senha, mas a senha está visível dentro do próprio código. Qualquer pessoa que abrir o arquivo HTML vê <code>pass:'Joaquim.123@1'</code>. Isso NÃO é seguro para dados reais. Precisa ser substituído por autenticação real antes de usar com dados reais.</div>
+    </div>
+  </div>
+
+  <div class="sec-level sec-green">
+    <span class="sec-icon">✓</span>
+    <div>
+      <div class="sec-title">Nível após implementação com Supabase: ALTO</div>
+      <div class="sec-desc">O Supabase inclui automaticamente: autenticação segura com hash de senha (bcrypt), tokens JWT com expiração, HTTPS em todas as conexões, Row Level Security (cada usuário só vê seus dados), e proteção contra SQL Injection por padrão.</div>
+    </div>
+  </div>
+
+  <hr>
+  <p style="font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:16px">Camadas de segurança que você vai ter</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-title">Autenticação — "Quem é você?"</div>
+    <div class="step-body">O Supabase Auth faz isso por você automaticamente. Cada usuário tem email + senha com hash bcrypt (não dá pra descobrir a senha original, mesmo que invadam o banco). Você pode ativar também o <b>2FA (dupla verificação)</b> — igual ao banco: você digita a senha e depois um código que vai pro seu celular.</div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-title">Criptografia AES-256 — "Mesmo que roubem, não entendem"</div>
+    <div class="step-body">O Supabase criptografa todos os dados em repouso com <b>AES-256</b> (o mesmo padrão usado por bancos e governos). Se alguém invadir fisicamente o servidor e pegar o HD, os dados aparecem como código ilegível. A chave para descriptografar só existe no sistema autorizado.</div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-title">HTTPS / TLS — "Os dados viajam em um túnel secreto"</div>
+    <div class="step-body">Todo dado que sai do seu computador até o servidor viaja <b>criptografado pelo TLS</b>. Se alguém interceptar a conexão (ataque man-in-the-middle), só vê lixo ilegível. O Vercel e Railway configuram isso automaticamente — você não precisa fazer nada.</div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-title">Row Level Security (RLS) — "Cada um vê só o que é seu"</div>
+    <div class="step-body">O Supabase tem um recurso chamado RLS. Você define regras: "o usuário X só pode ver os leads da empresa X". Isso impede que um funcionário acesse dados de outro cliente mesmo que descubra a URL da API.</div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-title">Backup automático + WAL Recovery</div>
+    <div class="step-body">O Supabase faz <b>backup diário automático</b>. Mas melhor ainda: ele usa <b>WAL (Write-Ahead Log)</b> — isso significa que se o banco "morrer" agora às 14h32, você pode restaurar para o estado exato de 14h31. É como um "Ctrl+Z" com data e hora precisos. Muito mais seguro que backup diário simples.</div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-title">Proteção contra ataques comuns</div>
+    <div class="step-body">
+      <b>Brute Force:</b> bloqueio automático após X tentativas de login erradas<br>
+      <b>SQL Injection:</b> o Supabase usa queries parametrizadas — impossível injetar código malicioso<br>
+      <b>XSS:</b> Vercel tem headers de segurança que bloqueiam scripts maliciosos<br>
+      <b>DDOS:</b> Vercel e Railway têm proteção nativa de CDN contra ataques de volume
+    </div>
+  </div>
+
+  <div class="alert alert-danger">
+    <span class="alert-icon">🚨</span>
+    <div><b>NUNCA faça isso:</b> Não coloque a chave secreta do Supabase (service_role key) dentro do HTML que vai pro ar. Essa chave dá acesso total ao banco. Use apenas a chave pública (anon key) no frontend, e a chave secreta só no backend (Railway/n8n).</div>
+  </div>
+
+  <div class="alert alert-ok">
+    <span class="alert-icon">✓</span>
+    <div><b>Resumindo a segurança pós-implementação:</b> Com Supabase + Vercel + Railway, você vai ter segurança de nível empresarial sem pagar por isso. É o mesmo padrão técnico que startups como Notion, Linear e Vercel usam para guardar dados de milhões de usuários.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 05 ═══════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Integração das APIs — como conectar o mundo real</span>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-icon">🔌</span>
+    <div class="analogy-text">
+      <b>API é como uma tomada padronizada.</b> Cada serviço (Google, Instagram, Meta) tem uma tomada específica. Você precisa do "plug" certo para cada uma. Esse plug é chamado de API Key ou Token — é uma senha longa que prova que você tem permissão para pegar os dados daquele serviço.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">API 1 — Google Sheets (sincronização de planilhas)</div>
+    <p><b>Para que serve:</b> Quando você atualizar uma planilha Google, o CRM atualiza automaticamente. Quando o agente IA cadastrar um lead, ele aparece na planilha também.</p>
+    <p><b>Como pegar:</b></p>
+    <div class="code-block">
+<span class="comment">// PASSO 1: Criar projeto no Google Cloud</span>
+<span class="key">1.</span> Acesse: <span class="str">console.cloud.google.com</span>
+<span class="key">2.</span> Clique em "Criar Projeto" → dê qualquer nome
+<span class="key">3.</span> No menu lateral: "APIs e Serviços" → "Biblioteca"
+<span class="key">4.</span> Procure e ative: <span class="str">"Google Sheets API"</span>
+<span class="key">5.</span> Vá em "Credenciais" → "Criar Credencial" → "Conta de Serviço"
+<span class="key">6.</span> Dê permissão "Editor" → Baixe o arquivo JSON gerado
+<span class="comment">// Esse JSON é sua chave. Guarde com segurança.</span>
+    </div>
+    <p><b>Custo:</b> <span class="price-tag price-free">GRÁTIS</span> até 300 requisições/minuto</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">API 2 — Google Ads (métricas de campanha)</div>
+    <p><b>Para que serve:</b> Busca automaticamente leads, CPL, CTR, gasto real das campanhas Google Ads dos seus clientes.</p>
+    <p><b>Como pegar:</b></p>
+    <div class="code-block">
+<span class="key">1.</span> Acesse: <span class="str">ads.google.com/home/tools/api-center</span>
+<span class="key">2.</span> Clique em "Solicitar acesso à API"
+<span class="key">3.</span> Preencha o formulário (nome, empresa, uso previsto)
+<span class="key">4.</span> Aguarde aprovação (1-3 dias úteis)
+<span class="key">5.</span> Depois de aprovado: Google Cloud → Ative "Google Ads API"
+<span class="key">6.</span> Configure OAuth2 → Gere Client ID + Client Secret
+<span class="key">7.</span> Configure no n8n com as credenciais geradas
+<span class="comment">// Para acessar dados de cliente: peça que ele adicione</span>
+<span class="comment">// sua conta como "Usuário" na conta de anúncios dele</span>
+    </div>
+    <p><b>Custo:</b> <span class="price-tag price-free">GRÁTIS</span> — taxa por operação, mas dentro do uso normal é zero</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">API 3 — Instagram / Meta (engajamento e ads)</div>
+    <p><b>Para que serve:</b> Pega seguidores, posts, alcance e dados de campanhas do Meta Ads (Facebook + Instagram).</p>
+    <div class="code-block">
+<span class="key">1.</span> Acesse: <span class="str">developers.facebook.com</span>
+<span class="key">2.</span> "Criar App" → Tipo: "Business"
+<span class="key">3.</span> Adicione o produto: <span class="str">"Instagram Graph API"</span>
+<span class="key">4.</span> Configure Basic Settings: nome, email, política de privacidade
+<span class="key">5.</span> Gere o <span class="str">User Access Token</span> (tem validade de 60 dias)
+<span class="key">6.</span> Converta para <span class="str">Long-Lived Token</span> (válido por 90 dias)
+<span class="key">7.</span> Configure renovação automática no n8n
+<span class="comment">// Para dados de cliente: peça que ele conecte a conta</span>
+<span class="comment">// profissional do Instagram ao seu Business Manager</span>
+    </div>
+    <p><b>Custo:</b> <span class="price-tag price-free">GRÁTIS</span> para leitura básica de dados</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">O n8n — o "maestro" das integrações</div>
+    <p>O <b>n8n</b> é uma ferramenta visual (parecida com um fluxograma) que conecta todos esses serviços sem precisar programar. Você arrasta blocos e conecta: "quando chegar lead no WhatsApp → salvar no Supabase → atualizar planilha Google".</p>
+    <div class="flow">
+      <div class="flow-box"><b>Google Sheets</b>planilha edita</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><b>n8n</b>processa</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><b>Supabase</b>salva</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box"><b>CRM</b>atualiza</div>
+    </div>
+    <p><b>Custo:</b> <span class="price-tag price-free">GRÁTIS</span> no n8n Cloud até 2.500 execuções/mês — suficiente para começar</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 06 ═══════════════════════════════ -->
+<div class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Passo a passo completo — do zero ao funcionando</span>
+  </div>
+
+  <div class="analogy">
+    <span class="analogy-icon">🗺️</span>
+    <div class="analogy-text">
+      <b>Pense nisto como montar um IKEA.</b> Tem muitas peças, mas cada passo é simples se você fizer um de cada vez. Não tente fazer tudo de uma vez — siga a ordem abaixo.
+    </div>
+  </div>
+
+  <p style="font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:20px">Fase 1 — Configurar o banco de dados (1-2 horas)</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-title">Criar conta no Supabase</div>
+    <div class="step-body">
+      1. Acesse <b><a href="https://supabase.com" target="_blank">supabase.com</a></b><br>
+      2. Clique em "Start your project" → entre com sua conta Google<br>
+      3. Clique em "New Project" → dê o nome "lexflow-crm"<br>
+      4. Escolha uma senha forte para o banco (guarde ela!)<br>
+      5. Região: <b>South America (São Paulo)</b> — mais rápido para você<br>
+      6. Aguarde ~2 minutos para o projeto criar
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-title">Criar as tabelas no Supabase (painel visual — sem código)</div>
+    <div class="step-body">
+      No painel do Supabase, clique em <b>"Table Editor"</b> no menu lateral. Crie as seguintes tabelas clicando em "New Table":<br><br>
+      <b>Tabela: leads</b> — colunas: id, nome, escritorio, area, canal, etapa, score, entrada, proximo_passo<br>
+      <b>Tabela: clientes</b> — colunas: id, nome, area, ticket, meses, nps, cs, checkin<br>
+      <b>Tabela: campanhas</b> — colunas: id, cliente_id, plataforma, leads_mes, cpl, ctr, gasto, orcamento<br>
+      <b>Tabela: drafts</b> — colunas: id, tipo, dados (JSON), label, deletado_em, expira_em<br><br>
+      Para cada coluna, o Supabase mostra um formulário simples — escolha o tipo (text, number, date, etc.) sem precisar escrever código SQL.
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-title">Pegar a chave de conexão do Supabase</div>
+    <div class="step-body">
+      No painel do Supabase:<br>
+      1. Vá em <b>Settings → API</b><br>
+      2. Copie a <b>Project URL</b> (parece com: https://xyzxyz.supabase.co)<br>
+      3. Copie a <b>anon/public key</b> (chave longa — começa com "eyJ...")<br><br>
+      <b>Guarde esses dois valores</b> — vamos usá-los no próximo passo.
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-title">Conectar o CRM ao Supabase</div>
+    <div class="step-body">
+      Abra o arquivo <b>crm-advocacia-lexflow.html</b> num editor de texto (pode ser o Bloco de Notas). Adicione no início do &lt;script&gt;:
+    </div>
+  </div>
+
+  <div class="code-label">Adicionar no início do JavaScript do CRM</div>
+  <div class="code-block">
+<span class="comment">// Cole isso no início da tag &lt;script&gt; do CRM:</span>
+<span class="kw">const</span> <span class="key">SUPABASE_URL</span> = <span class="str">'https://SEU-ID.supabase.co'</span>;
+<span class="kw">const</span> <span class="key">SUPABASE_KEY</span> = <span class="str">'eyJ...sua-chave-anon...'</span>;
+
+<span class="comment">// Importar biblioteca do Supabase (adicione no &lt;head&gt;):</span>
+<span class="comment">// &lt;script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"&gt;&lt;/script&gt;</span>
+
+<span class="kw">const</span> <span class="key">{ createClient }</span> = supabase;
+<span class="kw">const</span> <span class="key">db</span> = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+<span class="comment">// Exemplo: buscar leads reais (substitui DATA.leads inventados)</span>
+<span class="kw">async function</span> <span class="key">fetchLeads</span>() {
+  <span class="kw">const</span> { <span class="val">data</span>, <span class="val">error</span> } = <span class="kw">await</span> db
+    .from(<span class="str">'leads'</span>)
+    .select(<span class="str">'*'</span>)
+    .order(<span class="str">'created_at'</span>, { ascending: <span class="kw">false</span> });
+  <span class="kw">if</span> (!error) DATA.leads = data;
+}
+
+<span class="comment">// Exemplo: salvar lead real</span>
+<span class="kw">async function</span> <span class="key">saveLead</span>(lead) {
+  <span class="kw">const</span> { <span class="val">data</span>, <span class="val">error</span> } = <span class="kw">await</span> db
+    .from(<span class="str">'leads'</span>)
+    .insert([lead]);
+  <span class="kw">if</span> (!error) toast(<span class="str">'Lead salvo!'</span>, <span class="str">'success'</span>);
+}
+  </div>
+
+  <hr>
+  <p style="font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:20px">Fase 2 — Colocar na internet com Vercel (30 minutos)</p>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-title">Criar conta no GitHub (necessário para Vercel)</div>
+    <div class="step-body">
+      1. Acesse <b>github.com</b> → "Sign up" com seu email<br>
+      2. Crie um repositório novo: clique em "+" → "New repository"<br>
+      3. Nome: <b>lexflow-crm</b> → marque "Public" → "Create repository"<br>
+      4. Na página do repositório, clique em "uploading an existing file"<br>
+      5. Arraste o arquivo <b>crm-advocacia-lexflow.html</b> → "Commit changes"<br><br>
+      Pronto — seu código está no GitHub. É como salvar na nuvem com controle de versão.
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-title">Fazer deploy no Vercel (publicar na internet)</div>
+    <div class="step-body">
+      1. Acesse <b>vercel.com</b> → "Continue with GitHub"<br>
+      2. Clique em "Add New → Project"<br>
+      3. Selecione o repositório "lexflow-crm"<br>
+      4. Clique em "Deploy" — aguarde ~1 minuto<br>
+      5. Vercel vai te dar uma URL tipo: <b>lexflow-crm.vercel.app</b><br><br>
+      <b>Pronto!</b> Seu CRM já está na internet. Qualquer alteração que você fizer no GitHub aparece automaticamente no Vercel em segundos.
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-title">Configurar domínio próprio (opcional, mas recomendado)</div>
+    <div class="step-body">
+      Se você comprar o domínio <b>queirozestrategia.com.br</b> no Registro.br:<br>
+      1. No Vercel → seu projeto → "Settings" → "Domains"<br>
+      2. Digite seu domínio e clique "Add"<br>
+      3. O Vercel mostra os registros DNS que você precisa configurar<br>
+      4. No painel do Registro.br, adicione esses registros<br>
+      5. Aguarde até 48h para propagar — geralmente menos de 1h
+    </div>
+  </div>
+
+  <hr>
+  <p style="font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:20px">Fase 3 — Conectar planilhas com n8n (2-4 horas)</p>
+
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-title">Criar conta no n8n Cloud</div>
+    <div class="step-body">
+      1. Acesse <b>n8n.io</b> → "Get Started for free"<br>
+      2. Crie conta com email → escolha plano "Free"<br>
+      3. Você vai ter um painel visual com blocos<br><br>
+      Pense no n8n como um "Zapier brasileiro" — você conecta serviços sem código, arrastando blocos.
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">9</div>
+    <div class="step-title">Criar o fluxo: Google Sheets → Supabase</div>
+    <div class="step-body">
+      No n8n, clique em "New Workflow" e monte este fluxo:<br><br>
+      <b>Bloco 1:</b> "Google Sheets Trigger" → configurar sua planilha de leads<br>
+      <b>Bloco 2:</b> "Supabase" → "Upsert" → tabela "leads"<br>
+      <b>Bloco 3:</b> "HTTP Request" → URL do seu CRM (para forçar atualização)<br><br>
+      Salve e ative o workflow. Agora toda vez que você editar a planilha, o banco atualiza em segundos.
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">10</div>
+    <div class="step-title">Criar o fluxo: Supabase → Google Sheets (bidirecional)</div>
+    <div class="step-body">
+      Agora o caminho inverso — quando alguém adiciona um lead no CRM, aparece na planilha:<br><br>
+      <b>Bloco 1:</b> "Webhook" (URL que o CRM vai chamar ao salvar lead)<br>
+      <b>Bloco 2:</b> "Google Sheets" → "Append Row" → sua planilha de leads<br><br>
+      Cole a URL do Webhook no CRM onde você tem a função saveLead().
+    </div>
+  </div>
+
+  <hr>
+  <p style="font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:20px">Fase 4 — Autenticação real (substituir login do HTML)</p>
+
+  <div class="step">
+    <div class="step-num">11</div>
+    <div class="step-title">Ativar Supabase Auth</div>
+    <div class="step-body">
+      No painel do Supabase → "Authentication" → "Users" → "Add User"<br>
+      Crie o usuário: <b>queirozestrategia@suaemail.com</b> com a senha desejada.<br><br>
+      No CRM, substitua a função doAdminLogin() por:
+    </div>
+  </div>
+
+  <div class="code-block">
+<span class="kw">async function</span> <span class="key">doAdminLogin</span>() {
+  <span class="kw">const</span> email = document.getElementById(<span class="str">'admin-user'</span>).value;
+  <span class="kw">const</span> password = document.getElementById(<span class="str">'admin-pass'</span>).value;
+
+  <span class="kw">const</span> { <span class="val">data</span>, <span class="val">error</span> } = <span class="kw">await</span> db.auth.signInWithPassword({
+    email, password
+  });
+
+  <span class="kw">if</span> (error) {
+    document.getElementById(<span class="str">'admin-err'</span>).style.display = <span class="str">'block'</span>;
+    <span class="kw">return</span>;
+  }
+
+  <span class="comment">// Login bem sucedido — carregar dados reais</span>
+  document.getElementById(<span class="str">'admin-overlay'</span>).classList.remove(<span class="str">'open'</span>);
+  document.getElementById(<span class="str">'app'</span>).style.display = <span class="str">'flex'</span>;
+  <span class="kw">await</span> fetchLeads();  <span class="comment">// busca dados reais do banco</span>
+  <span class="kw">await</span> fetchClientes();
+  renderDashboard();
+  toast(<span class="str">'Bem-vindo ao LexFlow!'</span>, <span class="str">'success'</span>);
+}
+  </div>
+
+  <div class="alert alert-ok">
+    <span class="alert-icon">✓</span>
+    <div>Com isso, a senha fica <b>apenas no Supabase</b> (com hash bcrypt). Ninguém pode ver olhando o código HTML. Se alguém tentar 10 senhas erradas, a conta bloqueia automaticamente.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 07 ═══════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">Custos reais — quanto vai custar</span>
+  </div>
+
+  <table class="compare-table">
+    <thead><tr><th>Serviço</th><th>Plano Gratuito</th><th>Quando pagar</th><th>Custo pago</th></tr></thead>
+    <tbody>
+      <tr><td><b>Supabase</b></td><td class="best">Grátis — 500MB, 50k linhas</td><td>Se passar de 50k registros</td><td class="ok">US$25/mês (Pro)</td></tr>
+      <tr><td><b>Vercel</b></td><td class="best">Grátis — sites ilimitados</td><td>Team features avançadas</td><td class="ok">US$20/mês</td></tr>
+      <tr><td><b>n8n Cloud</b></td><td class="best">Grátis — 2.500 exec/mês</td><td>Se automatizar muito</td><td class="ok">US$20/mês</td></tr>
+      <tr><td><b>Railway</b></td><td class="ok">US$5 de crédito grátis</td><td>Backend em produção</td><td class="ok">~US$5/mês</td></tr>
+      <tr><td><b>Google Sheets API</b></td><td class="best">Grátis</td><td>Raramente</td><td class="best">Grátis na prática</td></tr>
+      <tr><td><b>Google Ads API</b></td><td class="best">Grátis</td><td>Nunca no uso normal</td><td class="best">Grátis na prática</td></tr>
+      <tr><td><b>Instagram Graph API</b></td><td class="best">Grátis</td><td>Nunca no uso normal</td><td class="best">Grátis na prática</td></tr>
+      <tr><td><b>Domínio .com.br</b></td><td class="bad">Não tem grátis</td><td>Imediatamente</td><td class="ok">R$40/ano (Registro.br)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">Custo total estimado por fase</div>
+    <div class="mrow"><span class="mlabel">Fase 1 — Desenvolvimento e testes</span><span class="mval green">R$ 0/mês</span></div>
+    <div class="mrow"><span class="mlabel">Fase 2 — Produção básica (até 50k registros)</span><span class="mval green">R$ 0 a R$ 28/mês (só Railway)</span></div>
+    <div class="mrow"><span class="mlabel">Fase 3 — Produção crescendo (50k+ registros)</span><span class="mval amber">R$ 80 a R$ 150/mês</span></div>
+    <div class="mrow"><span class="mlabel">Domínio próprio (.com.br)</span><span class="mval amber">R$ 40/ano (≈ R$ 3,30/mês)</span></div>
+    <div class="mrow" style="border-bottom:none;font-weight:700"><span class="mlabel" style="color:var(--text)">TOTAL para começar de forma profissional</span><span class="mval green" style="font-size:16px">R$ 0 a R$ 32/mês</span></div>
+  </div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">💡</span>
+    <div><b>Comparação:</b> A Hostinger cobra R$15-40/mês por um serviço mais limitado e menos seguro para esse tipo de sistema. Com a stack recomendada, você paga menos ou nada e tem mais recursos, segurança e escalabilidade.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 08 ═══════════════════════════════ -->
+<div class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">Resumo e próximos passos</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ordem de implementação recomendada</div>
+    <div class="mrow"><span class="mlabel">Semana 1</span><span class="mval blue">Criar conta Supabase + criar tabelas + conectar ao CRM</span></div>
+    <div class="mrow"><span class="mlabel">Semana 1</span><span class="mval blue">GitHub + Vercel → CRM online com URL pública</span></div>
+    <div class="mrow"><span class="mlabel">Semana 2</span><span class="mval amber">Ativar Supabase Auth → login real e seguro</span></div>
+    <div class="mrow"><span class="mlabel">Semana 2</span><span class="mval amber">n8n → conectar Google Sheets bidirecional</span></div>
+    <div class="mrow"><span class="mlabel">Semana 3</span><span class="mval">Google Cloud → Google Ads API + Google Sheets API</span></div>
+    <div class="mrow"><span class="mlabel">Semana 3</span><span class="mval">Meta Developers → Instagram Graph API</span></div>
+    <div class="mrow" style="border-bottom:none"><span class="mlabel">Semana 4</span><span class="mval green">Domínio próprio + HTTPS automático → sistema em produção</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Resposta direta às suas perguntas</div>
+    <p><b>O CRM tem dados reais?</b> Não ainda — os dados são mockados (inventados). Você implementa dados reais conectando ao Supabase conforme o passo 4 deste guia.</p>
+    <p><b>Como implementar?</b> Siga os 11 passos da Fase 1-4. O mais difícil é a primeira vez — depois fica fácil de manter.</p>
+    <p><b>Nível de segurança do banco?</b> Com Supabase, é alto — AES-256, TLS, backup WAL, autenticação bcrypt, proteção SQL injection. Muito acima de uma hospedagem compartilhada comum.</p>
+    <p><b>Como integrar as APIs?</b> Via n8n (visual, sem código) ou via JavaScript direto no CRM para as mais simples como Supabase e Google Sheets.</p>
+    <p><b>Devo usar a Hostinger?</b> Para o CRM, não é a melhor escolha. Vercel (grátis) + Supabase (grátis) é superior em todos os aspectos técnicos e mais barato.</p>
+    <p><b>Como gerenciar informações internas?</b> Tudo fica no Supabase. Você acessa pelo painel visual em supabase.com, vê os dados como uma planilha, edita manualmente se precisar, e o CRM sincroniza automaticamente.</p>
+  </div>
+
+  <div class="final-box">
+    <h3>🚀 Você consegue implementar isso</h3>
+    <p>Cada passo deste guia foi pensado para ser feito sem programar. O Supabase tem painel visual, o Vercel faz deploy em 1 clique, o n8n tem blocos que você arrasta. Se travar em qualquer etapa, retorne aqui e procure o passo específico. A stack que escolhemos é usada por milhares de startups ao redor do mundo — é robusta, gratuita para começar, e escala com o seu negócio.</p>
+  </div>
+</div>
+
+</div><!-- /content -->
+</body>
+</html>
