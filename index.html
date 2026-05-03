@@ -741,7 +741,8 @@ select.input { cursor: pointer; }
 .nps-ok   { color: #B7890A;     font-weight: 700; }
 .nps-bad  { color: var(--pink); font-weight: 700; }
 </style>
-<!-- Supabase SDK --> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -1122,33 +1123,41 @@ select.input { cursor: pointer; }
   </div>
 </div>
 <script>
+/* ═══════════════════════════════════════════════
+   SUPABASE — Conexão
+═══════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://mhtwqbskrxvnocuxlrgq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1odHdxYnNrcnh2bm9jdXhscmdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NzAwNTQsImV4cCI6MjA5MzM0NjA1NH0.SX1Q3fMpxx6uwpZjp1e4ViO-m2uJL4pvz6fzkIzauKc';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
 
-  /* ═══════════════════════════════════════════ SUPABASE — Configuração de Conexão Substitua os valores pelas suas credenciais ═══════════════════════════════════════════ */ const SUPABASE_URL = 'https://mhtwqbskrxvnocuxlrgq.supabase.co'; const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1odHdxYnNrcnh2bm9jdXhscmdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NzAwNTQsImV4cCI6MjA5MzM0NjA1NH0.SX1Q3fMpxx6uwpZjp1e4ViO-m2uJL4pvz6fzkIzauKc'; // Inicializar cliente const { createClient } = supabase; const db = createClient(SUPABASE_URL, SUPABASE_KEY); // Estado global de autenticação let currentUser = null; // Verificar se já está logado ao abrir o CRM db.auth.onAuthStateChange((event, session) => { if (session) { currentUser = session.user; document.getElementById('admin-overlay').classList.remove('open'); document.getElementById('app').style.display = 'flex'; initCRM(); // carrega dados reais } });
+/* ═══════════════════════════════════════════════
+   FETCH FUNCTIONS — Banco de dados
+═══════════════════════════════════════════════ */
+async function fetchLeadsDB() {
+  const { data } = await db.from('leads').select('*').is('deleted_at', null);
+  if (data && data.length) DATA.leads = data;
+}
+async function fetchClientesDB() {
+  const { data } = await db.from('clientes').select('*').is('deleted_at', null);
+  if (data && data.length) DATA.clientes = data;
+}
+async function fetchCampanhasDB() {
+  const { data } = await db.from('campanhas').select('*');
+  if (data && data.length) DATA.campanhas = data;
+}
+async function fetchDraftsDB() {
+  const { data } = await db.from('drafts').select('*').gt('expira_em', new Date().toISOString());
+  if (data) { drafts = data; updateDraftBadge(); }
+}
 
-  
-
-  /* ═══════════════════════════════════════════ INIT — Carrega todos os dados ao fazer login ═══════════════════════════════════════════ 
-
+/* ═══════════════════════════════════════════════
+   INIT CRM — único, sem duplicata
+═══════════════════════════════════════════════ */
 async function initCRM() {
   try {
-    const fetchLeads = async () => {
-      const { data } = await db.from('leads').select('*').is('deleted_at', null);
-      if (data && data.length) DATA.leads = data;
-    };
-    const fetchClientes = async () => {
-      const { data } = await db.from('clientes').select('*').is('deleted_at', null);
-      if (data && data.length) DATA.clientes = data;
-    };
-    const fetchCampanhas = async () => {
-      const { data } = await db.from('campanhas').select('*');
-      if (data && data.length) DATA.campanhas = data;
-    };
-    const fetchDrafts = async () => {
-      const { data } = await db.from('drafts').select('*')
-        .gt('expira_em', new Date().toISOString());
-      if (data) { drafts = data; updateDraftBadge(); }
-    };
-    await Promise.all([fetchLeads(), fetchClientes(), fetchCampanhas(), fetchDrafts()]);
+    await Promise.all([fetchLeadsDB(), fetchClientesDB(), fetchCampanhasDB(), fetchDraftsDB()]);
   } catch(e) {
     console.warn('Banco indisponível, usando dados locais:', e);
   }
@@ -1157,74 +1166,34 @@ async function initCRM() {
   rendered['dashboard'] = true;
   renderDashboard();
   toast('Bem-vindo ao LexFlow!', 'success');
-  setTimeout(() => showPersistentAlert(
-    '⚠️ Saldo baixo — Rocha Imobiliário: 83% do orçamento consumido'
-  ), 2000);
+  setTimeout(() => showPersistentAlert('⚠️ Saldo baixo — Rocha Imobiliário: 83% do orçamento consumido'), 2000);
+  activateRealtime();
 }
-  
-  /* ==========================================
-   TEMPO REAL - SUPABASE REALTIME
-   ========================================== */
 
+/* ═══════════════════════════════════════════════
+   REALTIME — Atualizações automáticas
+═══════════════════════════════════════════════ */
 function activateRealtime() {
-
-  // Leads
-  db.channel('leads-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'leads'
-      },
-      async () => {
-        await fetchLeadsDB();
-        buildKanban(DATA.leads);
-        toast('Kanban atualizado', 'info');
-      }
-    )
-    .subscribe();
-
-  // Clientes
-  db.channel('clientes-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'clientes'
-      },
-      async () => {
-        await fetchClientesDB();
-        rendered['clientes'] = false;
-      }
-    )
-    .subscribe();
-
-  // Campanhas
-  db.channel('campanhas-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'campanhas'
-      },
-      async () => {
-        await fetchCampanhasDB();
-        rendered['trafego'] = false;
-      }
-    )
-    .subscribe();
+  db.channel('leads-changes').on('postgres_changes',{event:'*',schema:'public',table:'leads'},async()=>{
+    await fetchLeadsDB(); buildKanban(DATA.leads);
+  }).subscribe();
+  db.channel('clientes-changes').on('postgres_changes',{event:'*',schema:'public',table:'clientes'},async()=>{
+    await fetchClientesDB(); rendered['clientes']=false;
+  }).subscribe();
+  db.channel('campanhas-changes').on('postgres_changes',{event:'*',schema:'public',table:'campanhas'},async()=>{
+    await fetchCampanhasDB(); rendered['trafego']=false;
+  }).subscribe();
 }
 
-/* ==========================================
-   CHAMAR DENTRO DO INITCRM
-   ========================================== */
-
-// Dentro da sua função initCRM(), adicione:
-
-// activateRealtime();
+/* ═══════════════════════════════════════════════
+   AUTH — Verifica sessão existente ao carregar
+═══════════════════════════════════════════════ */
+db.auth.onAuthStateChange((event, session) => {
+  if (session && !document.getElementById('app').style.display.includes('flex')) {
+    currentUser = session.user;
+    initCRM();
+  }
+});
 
 /* ═══════════════════════════════════════════════
    STATE
@@ -1306,10 +1275,8 @@ async function doAdminLogin() {
     return;
   }
 
-  document.getElementById('admin-overlay').classList.remove('open');
-  document.getElementById('app').style.display = 'flex';
-  renderDashboard();
-  toast('Bem-vindo ao LexFlow!', 'success');
+  currentUser = data.user;
+  await initCRM();
 }
 /* ═══════════════════════════════════════════════
    SIDEBAR
@@ -2103,8 +2070,6 @@ function showIntegration(){toast('Abrindo configuração Google Sheets...','info
 ═══════════════════════════════════════════════ */
 window.addEventListener('load',()=>{
   document.getElementById('admin-overlay').classList.add('open');
-  document.getElementById('admin-user').value='queirozestrategia';
-  document.getElementById('admin-pass').value='Joaquim.123@1';
 });
 window.addEventListener('resize',()=>{
   if(document.querySelector('.section.active')?.id==='sec-dashboard')renderDashboard();
